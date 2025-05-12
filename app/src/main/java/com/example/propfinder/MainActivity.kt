@@ -28,11 +28,21 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.viewinterop.AndroidView
+import org.osmdroid.config.Configuration
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        Configuration.getInstance().userAgentValue = packageName
         setContent {
             PropFinderTheme {
                 Template()
@@ -40,6 +50,41 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+@Composable
+fun OsmdroidMapView() {
+    AndroidView(
+        factory = { context: Context ->
+            MapView(context).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                controller.setZoom(16.0)
+                controller.setCenter(GeoPoint(47.637959, 6.862894))
+
+                val drawable = resources.getDrawable(R.drawable.pinpoint) as BitmapDrawable
+                val bitmap = drawable.bitmap
+                val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 40, 50, false)
+                val scaledDrawable = BitmapDrawable(resources, scaledBitmap)
+
+                val locations = listOf(
+                    GeoPoint(47.637959, 6.862894),
+                    GeoPoint(47.636601, 6.856739),
+                    GeoPoint(47.644654, 6.853288)
+                )
+
+                locations.forEach { location ->
+                    val marker = org.osmdroid.views.overlay.Marker(this)
+                    marker.position = location
+                    marker.icon = scaledDrawable
+                    marker.title = "Lieu"
+                    marker.snippet = "Un autre endroit"
+                    overlays.add(marker)
+                }
+            }
+        },
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,17 +176,19 @@ fun Template() {
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Page ${when (selectedIndex) {
-                    0 -> "Search"
-                    1 -> "Map"
-                    2 -> "Home"
-                    3 -> "Mail"
-                    4 -> "Profile"
-                    else -> ""
-                }}",
-                color = Color.White
-            )
+            when (selectedIndex) {
+                1 -> OsmdroidMapView() // Afficher la carte
+                else -> Text(
+                    text = "Page ${when (selectedIndex) {
+                        0 -> "Search"
+                        2 -> "Home"
+                        3 -> "Mail"
+                        4 -> "Profile"
+                        else -> ""
+                    }}",
+                    color = Color.White
+                )
+            }
         }
     }
 }
