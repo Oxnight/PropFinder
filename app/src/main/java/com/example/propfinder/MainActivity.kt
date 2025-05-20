@@ -36,6 +36,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import androidx.navigation.compose.*
+
 
 
 class MainActivity : ComponentActivity() {
@@ -44,9 +46,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         Configuration.getInstance().userAgentValue = packageName
         setContent {
-            PropFinderTheme {
-                Template()
+            val navController = rememberNavController()
 
+            NavHost(navController = navController, startDestination = "login") {
+                composable("login") { LoginPage(navController) }
+                composable("register") { RegisterPage() }
             }
         }
     }
