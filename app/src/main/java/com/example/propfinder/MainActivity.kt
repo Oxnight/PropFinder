@@ -95,7 +95,6 @@ fun Template() {
     Scaffold(
 
         topBar = {
-            // TopAppBar avec l'icône centrée
             CenterAlignedTopAppBar(
                 title = {},
                 navigationIcon = {
@@ -113,7 +112,7 @@ fun Template() {
                 actions = {
                     IconButton(onClick = { }) {
                         Icon(
-                            imageVector = Icons.Filled.Notifications, // Icône de notification de Material Icons
+                            imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notifications",
                             modifier = Modifier.size(32.dp),
                             tint = Color.DarkGray
@@ -177,10 +176,10 @@ fun Template() {
             contentAlignment = Alignment.Center
         ) {
             when (selectedIndex) {
-                1 -> OsmdroidMapView() // Afficher la carte
+                1 -> OsmdroidMapView()
+                0 -> Recherche()
                 else -> Text(
                     text = "Page ${when (selectedIndex) {
-                        0 -> "Search"
                         2 -> "Home"
                         3 -> "Mail"
                         4 -> "Profile"
