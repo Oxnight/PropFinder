@@ -29,7 +29,7 @@ fun LoginPage(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E)) // ✅ toute la page est noire
+            .background(Color(0xFF1E1E1E))
     ){
         Column(
             modifier = Modifier

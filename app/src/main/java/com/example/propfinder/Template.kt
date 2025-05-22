@@ -123,11 +123,11 @@ fun Template() {
             contentAlignment = Alignment.Center
         ) {
             when (selectedIndex) {
-                1 -> OsmdroidMapView() // Afficher la carte
+                1 -> OsmdroidMapView()
+                2 -> Publish()
+                0 -> Recherche()
                 else -> Text(
                     text = "Page ${when (selectedIndex) {
-                        0 -> "Search"
-                        2 -> "Home"
                         3 -> "Mail"
                         4 -> "Profile"
                         else -> ""
