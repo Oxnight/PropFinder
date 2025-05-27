@@ -39,13 +39,11 @@ fun Template() {
     var selectedIndex by remember { mutableStateOf(0) }
 
     Scaffold(
-
         topBar = {
-            // TopAppBar avec l'icône centrée
             CenterAlignedTopAppBar(
                 title = {},
                 navigationIcon = {
-                    Box(modifier = Modifier.fillMaxWidth()) {
+                    Box(Modifier.fillMaxWidth()) {
                         Icon(
                             painter = painterResource(id = R.drawable.propfinder),
                             contentDescription = "Logo",
@@ -57,9 +55,9 @@ fun Template() {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { /* ... */ }) {
                         Icon(
-                            imageVector = Icons.Filled.Notifications, // Icône de notification de Material Icons
+                            imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notifications",
                             modifier = Modifier.size(32.dp),
                             tint = Color.DarkGray
@@ -71,69 +69,42 @@ fun Template() {
                 )
             )
         },
-
         bottomBar = {
             NavigationBar(
                 containerColor = Color(0xFFD9D9D9),
-                contentColor = Color.White,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFF1E1E1E))
             ) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Search, contentDescription = "Search", modifier = Modifier.size(32.dp) ) },
-                    label = { Text("Search") },
-                    selected = selectedIndex == 0,
-                    onClick = { selectedIndex = 0 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.LocationOn, contentDescription = "Map", modifier = Modifier.size(32.dp) ) },
-                    label = { Text("Map") },
-                    selected = selectedIndex == 1,
-                    onClick = { selectedIndex = 1 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Home, contentDescription = "Publish", modifier = Modifier.size(32.dp) ) },
-                    label = { Text("Publish") },
-                    selected = selectedIndex == 2,
-                    onClick = { selectedIndex = 2 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Email, contentDescription = "Messages", modifier = Modifier.size(32.dp) ) },
-                    label = { Text("Messages") },
-                    selected = selectedIndex == 3,
-                    onClick = { selectedIndex = 3 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Person, contentDescription = "Profil", modifier = Modifier.size(32.dp) ) },
-                    label = { Text("Profil") },
-                    selected = selectedIndex == 4,
-                    onClick = { selectedIndex = 4 }
-                )
+                listOf(
+                    Icons.Filled.Search to "Search",
+                    Icons.Filled.LocationOn to "Map",
+                    Icons.Filled.Home to "Publish",
+                    Icons.Filled.Email to "Messages",
+                    Icons.Filled.Person to "Profil"
+                ).forEachIndexed { idx, pair ->
+                    NavigationBarItem(
+                        icon = { Icon(pair.first, contentDescription = pair.second, modifier = Modifier.size(32.dp)) },
+                        label = { Text(pair.second) },
+                        selected = selectedIndex == idx,
+                        onClick = { selectedIndex = idx }
+                    )
+                }
             }
         }
-    )
-
-    { innerPadding ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .padding(innerPadding)
+                .fillMaxSize()
                 .background(Color(0xFF1E1E1E))
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
         ) {
             when (selectedIndex) {
+                0 -> Recherche()
                 1 -> OsmdroidMapView()
                 2 -> Publish()
-                0 -> Recherche()
-                else -> Text(
-                    text = "Page ${when (selectedIndex) {
-                        3 -> "Mail"
-                        4 -> "Profile"
-                        else -> ""
-                    }}",
-                    color = Color.White
-                )
+                3 -> Text("Page Mail", color = Color.White)
+                4 -> Text("Page Profile", color = Color.White)
             }
         }
     }
