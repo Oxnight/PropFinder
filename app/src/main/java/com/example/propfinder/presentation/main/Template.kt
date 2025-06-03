@@ -1,4 +1,4 @@
-package com.example.propfinder
+package com.example.propfinder.presentation.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import com.example.propfinder.R
+import com.example.propfinder.presentation.home.Recherche
+import com.example.propfinder.presentation.main.publish.Publish
+import com.example.propfinder.presentation.main.map.OsmdroidMapView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home

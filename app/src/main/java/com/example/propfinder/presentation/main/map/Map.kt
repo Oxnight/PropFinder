@@ -1,4 +1,4 @@
-package com.example.propfinder
+package com.example.propfinder.presentation.main.map
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,6 +10,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import com.example.propfinder.R
 
 @Composable
 fun OsmdroidMapView() {

@@ -1,4 +1,4 @@
-package com.example.propfinder
+package com.example.propfinder.presentation.main.publish
 
 import android.net.Uri
 import android.widget.Toast
