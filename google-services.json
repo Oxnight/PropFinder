@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "83238345569",
+    "project_id": "propfinder-cf544",
+    "storage_bucket": "propfinder-cf544.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:83238345569:android:c4c79ba33aff9124b14320",
+        "android_client_info": {
+          "package_name": "com.example.propfinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfxHEnmyuWNAiRBileJFOk33Ik0Fftsig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
