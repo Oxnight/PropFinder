@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,11 +37,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.propfinder.presentation.viewmodels.AuthViewModel
+import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Template() {
+fun Template(authViewModel: AuthViewModel) {
     var selectedIndex by remember { mutableStateOf(0) }
+    val annonceViewModel: AnnonceViewModel = viewModel()
+    val authState by authViewModel.authState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -59,7 +65,7 @@ fun Template() {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* ... */ }) {
+                    IconButton(onClick = { /* Notifications */ }) {
                         Icon(
                             imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notifications",
@@ -104,9 +110,9 @@ fun Template() {
                 .background(Color(0xFF1E1E1E))
         ) {
             when (selectedIndex) {
-                0 -> Recherche()
-                1 -> OsmdroidMapView()
-                2 -> Publish()
+                0 -> Recherche(annonceViewModel = annonceViewModel)
+                1 -> OsmdroidMapView(annonceViewModel = annonceViewModel)
+                2 -> Publish(annonceViewModel = annonceViewModel)
                 3 -> Text("Page Mail", color = Color.White)
                 4 -> Text("Page Profile", color = Color.White)
             }

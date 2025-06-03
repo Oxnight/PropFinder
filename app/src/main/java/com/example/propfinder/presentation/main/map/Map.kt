@@ -11,9 +11,10 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import com.example.propfinder.R
+import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 
 @Composable
-fun OsmdroidMapView() {
+fun OsmdroidMapView(annonceViewModel: AnnonceViewModel) {
     AndroidView(
         factory = { context: Context ->
             MapView(context).apply {

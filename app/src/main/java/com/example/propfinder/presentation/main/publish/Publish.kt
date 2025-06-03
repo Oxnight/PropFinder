@@ -4,7 +4,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
@@ -19,24 +18,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -45,8 +39,9 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,9 +53,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 
 @Composable
-fun Publish() {
+fun Publish(annonceViewModel: AnnonceViewModel) {
+    val annonceState by annonceViewModel.annonceState.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,12 +66,10 @@ fun Publish() {
             .background(Color(0xFFD9D9D9)),
     ) {
         Column(
-            modifier = Modifier
-                .padding(top = 16.dp)
+            modifier = Modifier.padding(top = 16.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = "  Publier une annonce",
@@ -99,23 +95,58 @@ fun Publish() {
                 .padding(top = 8.dp)
         )
 
-        FormulaireAvance()
+        // Afficher les messages de succès/erreur
+        annonceState.error?.let { error ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Red.copy(alpha = 0.1f)
+                )
+            ) {
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
+        if (annonceState.publishSuccess) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Green.copy(alpha = 0.1f)
+                )
+            ) {
+                Text(
+                    text = "Annonce publiée avec succès !",
+                    color = Color.Green,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
+        FormulaireAvance(annonceViewModel = annonceViewModel)
     }
 }
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FormulaireAvance() {
+fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
     val context = LocalContext.current
+    val annonceState by annonceViewModel.annonceState.collectAsState()
 
     val options = listOf("à vendre", "à louer")
     var selectedOption by remember { mutableStateOf("") }
 
     var titre by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var informations by remember { mutableStateOf("") }
-    var addresse by remember { mutableStateOf("") }
+    var caracteristiques by remember { mutableStateOf("") }
+    var localisation by remember { mutableStateOf("") }
 
     var imageUris by remember { mutableStateOf(listOf<Uri>()) }
     val imagePicker = rememberLauncherForActivityResult(
@@ -126,7 +157,19 @@ fun FormulaireAvance() {
 
     var prix by remember { mutableStateOf(50f) }
 
-    val scrollState = rememberScrollState()
+    // Réinitialiser le formulaire après publication réussie
+    LaunchedEffect(annonceState.publishSuccess) {
+        if (annonceState.publishSuccess) {
+            selectedOption = ""
+            titre = ""
+            description = ""
+            caracteristiques = ""
+            localisation = ""
+            imageUris = emptyList()
+            prix = 50f
+            annonceViewModel.clearPublishSuccess()
+        }
+    }
 
     CompositionLocalProvider(
         LocalOverscrollConfiguration provides null
@@ -158,7 +201,7 @@ fun FormulaireAvance() {
                     ) {
                         RadioButton(
                             selected = selectedOption == "à vendre",
-                            onClick = null // null ici car l'action est gérée par Row/selectable
+                            onClick = null
                         )
                         Text("à vendre", modifier = Modifier.padding(start = 8.dp))
                     }
@@ -190,7 +233,8 @@ fun FormulaireAvance() {
                     label = { Text("Titre") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 8.dp),
+                    enabled = !annonceState.isPublishing
                 )
             }
 
@@ -203,9 +247,8 @@ fun FormulaireAvance() {
             }
 
             item {
-                Row (
-                    modifier = Modifier
-                        .padding(bottom = 8.dp),
+                Row(
+                    modifier = Modifier.padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -214,7 +257,9 @@ fun FormulaireAvance() {
                             .size(40.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color(0xFFF07B42))
-                            .clickable { imagePicker.launch("image/*") },
+                            .clickable(enabled = !annonceState.isPublishing) {
+                                imagePicker.launch("image/*")
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -223,7 +268,10 @@ fun FormulaireAvance() {
                             tint = Color(0xFFD9D9D9),
                         )
                     }
-                    Text("   (${imageUris.size} images chargées)",fontWeight = FontWeight.Light)
+                    Text(
+                        "   (${imageUris.size} images chargées)",
+                        fontWeight = FontWeight.Light
+                    )
                 }
             }
 
@@ -232,12 +280,13 @@ fun FormulaireAvance() {
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !annonceState.isPublishing
                 )
             }
 
             item {
-                Text("Prix: ${prix.toInt()} €",fontWeight = FontWeight.Bold)
+                Text("Prix: ${prix.toInt()} €", fontWeight = FontWeight.Bold)
                 Slider(
                     value = prix,
                     onValueChange = { prix = it },
@@ -248,63 +297,70 @@ fun FormulaireAvance() {
                         thumbColor = Color(0xFF1E1E1E),
                         activeTrackColor = Color(0xFFF07B42),
                         inactiveTrackColor = Color.LightGray
-                    )
+                    ),
+                    enabled = !annonceState.isPublishing
                 )
             }
 
             item {
                 OutlinedTextField(
-                    value = informations,
-                    onValueChange = { informations = it },
-                    label = { Text("Informations") },
-                    modifier = Modifier.fillMaxWidth()
+                    value = caracteristiques,
+                    onValueChange = { caracteristiques = it },
+                    label = { Text("Caractéristiques") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !annonceState.isPublishing
                 )
             }
 
             item {
                 OutlinedTextField(
-                    value = addresse,
-                    onValueChange = { addresse = it },
-                    label = { Text("Adresse") },
-                    modifier = Modifier.fillMaxWidth()
+                    value = localisation,
+                    onValueChange = { localisation = it },
+                    label = { Text("Localisation") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !annonceState.isPublishing
                 )
             }
-
-            //items(imageUris) { uri ->
-                // Tu peux activer ceci avec Coil ou Glide (via rememberAsyncImagePainter ou autre)
-                /* Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .padding(4.dp),
-                    contentScale = ContentScale.Crop
-                ) */
-            //}
 
             item {
                 Button(
                     onClick = {
                         val isFormValid = titre.isNotBlank()
                                 && description.isNotBlank()
-                                && informations.isNotBlank()
-                                && addresse.isNotBlank()
+                                && caracteristiques.isNotBlank()
+                                && localisation.isNotBlank()
                                 && prix > 0f
                                 && selectedOption.isNotBlank()
 
                         if (!isFormValid) {
                             Toast.makeText(context, "Merci de remplir tous les champs obligatoires", Toast.LENGTH_SHORT).show()
                         } else {
-                            //envoie des données à firebase idk
+                            annonceViewModel.publishAnnonce(
+                                type = selectedOption,
+                                titre = titre,
+                                prix = prix,
+                                description = description,
+                                caracteristiques = caracteristiques,
+                                localisation = localisation,
+                                imageUris = imageUris
+                            )
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF07B42), // fond orange clair
-                        contentColor = Color.White            // texte blanc
+                        containerColor = Color(0xFFF07B42),
+                        contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !annonceState.isPublishing
                 ) {
-                    Text("Envoyer", fontWeight = FontWeight.Bold)
+                    if (annonceState.isPublishing) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text("Envoyer", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
