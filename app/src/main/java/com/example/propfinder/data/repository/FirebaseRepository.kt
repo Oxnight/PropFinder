@@ -28,7 +28,7 @@ class FirebaseRepository {
                 nom = nom,
                 prenom = prenom,
                 mail = email,
-                role = "user", // Fixed: role was not defined
+                age = age,
                 mot_de_passe = "", // Ne pas stocker le mot de passe en clair
                 avatar = ""
             )
