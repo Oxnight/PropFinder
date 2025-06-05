@@ -1,5 +1,6 @@
 package com.example.propfinder.presentation.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -297,6 +298,20 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 } else {
                     Text("Créer votre compte", color = Color(0xFF1E1E1E))
                 }
+            }
+            OutlinedButton(
+                onClick = {
+                    navController.popBackStack()
+                },
+                modifier = Modifier
+                    .padding(5.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Transparent,     // fond transparent
+                    contentColor = Color(0xFFF07B42)        // couleur du texte
+                ),
+                border = BorderStroke(2.dp, Color(0xFFF07B42)) // contour orange
+            ) {
+                Text("Retour")
             }
         }
     }
