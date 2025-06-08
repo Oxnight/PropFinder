@@ -57,7 +57,7 @@ import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 
 @Composable
 fun Publish(annonceViewModel: AnnonceViewModel) {
-    val annonceState by annonceViewModel.annonceState.collectAsState()
+
 
     Column(
         modifier = Modifier
@@ -95,40 +95,9 @@ fun Publish(annonceViewModel: AnnonceViewModel) {
                 .padding(top = 8.dp)
         )
 
-        // Afficher les messages de succès/erreur
-        annonceState.error?.let { error ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Red.copy(alpha = 0.1f)
-                )
-            ) {
-                Text(
-                    text = error,
-                    color = Color.Red,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        }
 
-        if (annonceState.publishSuccess) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Green.copy(alpha = 0.1f)
-                )
-            ) {
-                Text(
-                    text = "Annonce publiée avec succès !",
-                    color = Color.Green,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        }
+
+
 
         FormulaireAvance(annonceViewModel = annonceViewModel)
     }
@@ -138,7 +107,7 @@ fun Publish(annonceViewModel: AnnonceViewModel) {
 @Composable
 fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
     val context = LocalContext.current
-    val annonceState by annonceViewModel.annonceState.collectAsState()
+
 
     val options = listOf("à vendre", "à louer")
     var selectedOption by remember { mutableStateOf("") }
@@ -157,19 +126,6 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
 
     var prix by remember { mutableStateOf(50f) }
 
-    // Réinitialiser le formulaire après publication réussie
-    LaunchedEffect(annonceState.publishSuccess) {
-        if (annonceState.publishSuccess) {
-            selectedOption = ""
-            titre = ""
-            description = ""
-            caracteristiques = ""
-            localisation = ""
-            imageUris = emptyList()
-            prix = 50f
-            annonceViewModel.clearPublishSuccess()
-        }
-    }
 
     CompositionLocalProvider(
         LocalOverscrollConfiguration provides null
@@ -234,7 +190,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
-                    enabled = !annonceState.isPublishing
+
                 )
             }
 
@@ -256,10 +212,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF07B42))
-                            .clickable(enabled = !annonceState.isPublishing) {
-                                imagePicker.launch("image/*")
-                            },
+                            .background(Color(0xFFF07B42)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -281,7 +234,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                     onValueChange = { description = it },
                     label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !annonceState.isPublishing
+
                 )
             }
 
@@ -298,7 +251,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                         activeTrackColor = Color(0xFFF07B42),
                         inactiveTrackColor = Color.LightGray
                     ),
-                    enabled = !annonceState.isPublishing
+
                 )
             }
 
@@ -308,7 +261,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                     onValueChange = { caracteristiques = it },
                     label = { Text("Caractéristiques") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !annonceState.isPublishing
+
                 )
             }
 
@@ -318,7 +271,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                     onValueChange = { localisation = it },
                     label = { Text("Localisation") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !annonceState.isPublishing
+
                 )
             }
 
@@ -332,35 +285,16 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                                 && prix > 0f
                                 && selectedOption.isNotBlank()
 
-                        if (!isFormValid) {
-                            Toast.makeText(context, "Merci de remplir tous les champs obligatoires", Toast.LENGTH_SHORT).show()
-                        } else {
-                            annonceViewModel.publishAnnonce(
-                                type = selectedOption,
-                                titre = titre,
-                                prix = prix,
-                                description = description,
-                                caracteristiques = caracteristiques,
-                                localisation = localisation,
-                                imageUris = imageUris
-                            )
-                        }
+
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFF07B42),
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(12.dp),
-                    enabled = !annonceState.isPublishing
+
                 ) {
-                    if (annonceState.isPublishing) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        Text("Envoyer", fontWeight = FontWeight.Bold)
-                    }
+
                 }
             }
         }

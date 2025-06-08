@@ -2,123 +2,83 @@ package com.example.propfinder.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.propfinder.data.repository.FirebaseRepository
+
 import com.example.propfinder.data.states.AuthState
 import com.example.propfinder.data.models.Utilisateur
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
 class AuthViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
 
-    private val _authState = MutableStateFlow(AuthState())
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val auth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
+    private val utilisateurCollection = firestore.collection("Utilisateur")
 
-    init {
-        checkCurrentUser()
-    }
+    fun signUp(
+        email: String,
+        password: String,
+        nom: String,
+        prenom: String,
+        age: String,
+        onSuccess: () -> Unit
+    ) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnSuccessListener {
+                val uid = auth.currentUser?.uid
 
-    private fun checkCurrentUser() {
-        val userId = repository.getCurrentUserId()
-        if (userId != null) {
-            viewModelScope.launch {
-                repository.getUtilisateur(userId).fold(
-                    onSuccess = { user ->
-                        _authState.value = _authState.value.copy(
-                            isLoggedIn = true,
-                            currentUser = user
-                        )
-                    },
-                    onFailure = {
-                        signOut()
-                    }
+                val userDataSendToFireStore = Utilisateur(
+                    id = uid.toString(),
+                    mail = email,
+                    nom = nom,
+                    prenom = prenom,
+                    age = age
                 )
+
+                firestore.collection("Utilisateur")
+                    .document(uid!!)
+                    .set(userDataSendToFireStore)
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
             }
-        }
+    }
+    fun signIn(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit
+    ) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener {
+                onSuccess()
+            }
     }
 
-    fun signIn(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) {
-            _authState.value = _authState.value.copy(error = "Veuillez remplir tous les champs")
-            return
-        }
-
-        _authState.value = _authState.value.copy(isLoading = true, error = null)
-
-        viewModelScope.launch {
-            repository.signIn(email, password).fold(
-                onSuccess = { userId ->
-                    repository.getUtilisateur(userId).fold(
-                        onSuccess = { user ->
-                            _authState.value = _authState.value.copy(
-                                isLoading = false,
-                                isLoggedIn = true,
-                                currentUser = user
-                            )
-                        },
-                        onFailure = { exception ->
-                            _authState.value = _authState.value.copy(
-                                isLoading = false,
-                                error = "Erreur lors de la récupération du profil"
-                            )
-                        }
-                    )
-                },
-                onFailure = { exception ->
-                    _authState.value = _authState.value.copy(
-                        isLoading = false,
-                        error = "Email ou mot de passe incorrect"
-                    )
-                }
-            )
-        }
+    fun getUserId(): String? {
+        return auth.currentUser?.uid
     }
 
-    fun signUp(email: String, password: String, nom: String, prenom: String, age: String) {
-        if (email.isBlank() || password.isBlank() || nom.isBlank() || prenom.isBlank() || age.isBlank()) {
-            _authState.value = _authState.value.copy(error = "Veuillez remplir tous les champs")
-            return
-        }
-
-        _authState.value = _authState.value.copy(isLoading = true, error = null)
-
-        viewModelScope.launch {
-            repository.signUp(email, password, nom, prenom, age).fold(
-                onSuccess = { userId ->
-                    repository.getUtilisateur(userId).fold(
-                        onSuccess = { user ->
-                            _authState.value = _authState.value.copy(
-                                isLoading = false,
-                                isLoggedIn = true,
-                                currentUser = user
-                            )
-                        },
-                        onFailure = { exception ->
-                            _authState.value = _authState.value.copy(
-                                isLoading = false,
-                                error = "Erreur lors de la création du profil"
-                            )
-                        }
-                    )
-                },
-                onFailure = { exception ->
-                    _authState.value = _authState.value.copy(
-                        isLoading = false,
-                        error = "Erreur lors de la création du compte"
-                    )
-                }
-            )
-        }
+    fun getUserNameById(idUser: String, onResult: (String?) -> Unit) {
+        utilisateurCollection.document(idUser)
+            .get()
+            .addOnSuccessListener { document ->
+                val nom = document.getString("nom")
+                val prenom = document.getString("prenom")
+                val nomPrenom = "$prenom $nom"
+                onResult(nomPrenom)
+            }
     }
 
+    fun isUserLoggedIn(): Boolean {
+        return auth.currentUser != null
+    }
     fun signOut() {
-        repository.signOut()
-        _authState.value = AuthState()
+        FirebaseAuth.getInstance().signOut()
     }
 
-    fun clearError() {
-        _authState.value = _authState.value.copy(error = null)
-    }
+
 }

@@ -5,7 +5,5 @@ data class Utilisateur(
     val nom: String = "",
     val prenom: String = "",
     val mail: String = "",
-    val age: String = "",
-    val mot_de_passe: String = "",
-    val avatar: String = ""
+    val age: String = ""
 )

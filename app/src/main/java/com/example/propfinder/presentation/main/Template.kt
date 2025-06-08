@@ -1,5 +1,7 @@
 package com.example.propfinder.presentation.main
 
+import ProfilePage
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,15 +40,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.propfinder.presentation.main.messages.DiscussionsPage
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Template(authViewModel: AuthViewModel) {
+fun Template(authViewModel: AuthViewModel, navController: NavController) {
     var selectedIndex by remember { mutableStateOf(0) }
     val annonceViewModel: AnnonceViewModel = viewModel()
-    val authState by authViewModel.authState.collectAsState()
+
+
+
 
     Scaffold(
         topBar = {
@@ -113,8 +120,8 @@ fun Template(authViewModel: AuthViewModel) {
                 0 -> Recherche(annonceViewModel = annonceViewModel)
                 1 -> OsmdroidMapView(annonceViewModel = annonceViewModel)
                 2 -> Publish(annonceViewModel = annonceViewModel)
-                3 -> Text("Page Mail", color = Color.White)
-                4 -> Text("Page Profile", color = Color.White)
+                3 -> DiscussionsPage(modifier = Modifier, navController = navController)
+                4 -> ProfilePage(navController= navController)
             }
         }
     }

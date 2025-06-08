@@ -1,5 +1,6 @@
 package com.example.propfinder.presentation.auth
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,27 +26,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    val authState by authViewModel.authState.collectAsState()
-
-    // Si l'utilisateur est connecté, naviguer vers la page principale
-    LaunchedEffect(authState.isLoggedIn) {
-        if (authState.isLoggedIn) {
-            navController.navigate("main") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
-
-    // Effacer l'erreur quand on change de page
-    LaunchedEffect(Unit) {
-        authViewModel.clearError()
-    }
 
     Box(
         modifier = Modifier
@@ -82,7 +68,6 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
                 leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-                enabled = !authState.isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -98,37 +83,21 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !authState.isLoading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Afficher l'erreur si elle existe
-            authState.error?.let { error ->
-                Text(
-                    text = error,
-                    color = Color.Red,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
 
             Button(
                 onClick = {
-                    authViewModel.signIn(email, password)
+                    authViewModel.signIn(
+                        email, password,
+                        onSuccess = { navController.navigate("main") })
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
-                enabled = !authState.isLoading
             ) {
-                if (authState.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color(0xFF1E1E1E),
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Text("Se connecter", color = Color(0xFF1E1E1E))
-                }
+                Text("Se connecter", color = Color(0xFF1E1E1E))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -137,7 +106,6 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
                 onClick = { navController.navigate("register") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
-                enabled = !authState.isLoading
             ) {
                 Text("Créer un compte", color = Color(0xFF1E1E1E))
             }
@@ -161,21 +129,6 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
 
-    val authState by authViewModel.authState.collectAsState()
-
-    // Si l'utilisateur est connecté, naviguer vers la page principale
-    LaunchedEffect(authState.isLoggedIn) {
-        if (authState.isLoggedIn) {
-            navController.navigate("main") {
-                popUpTo("register") { inclusive = true }
-            }
-        }
-    }
-
-    // Effacer l'erreur quand on change de page
-    LaunchedEffect(Unit) {
-        authViewModel.clearError()
-    }
 
     Box(
         modifier = Modifier
@@ -211,7 +164,6 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-                enabled = !authState.isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -224,7 +176,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-                enabled = !authState.isLoading
+
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -237,7 +189,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-                enabled = !authState.isLoading
+
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -250,7 +202,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-                enabled = !authState.isLoading
+
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -265,39 +217,34 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !authState.isLoading
+
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Afficher l'erreur si elle existe
-            authState.error?.let { error ->
-                Text(
-                    text = error,
-                    color = Color.Red,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
+
 
             Button(
                 onClick = {
-                    authViewModel.signUp(email, password, lastName, firstName, age)
+                    authViewModel.signUp(
+                        email = email,
+                        password = password,
+                        age = age,
+                        prenom = firstName,
+                        nom = lastName,
+                        onSuccess = {
+                            navController.navigate("main");
+                        }
+                    )
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
-                enabled = !authState.isLoading
+
             ) {
-                if (authState.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color(0xFF1E1E1E),
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Text("Créer votre compte", color = Color(0xFF1E1E1E))
-                }
+                Text("Créer votre compte", color = Color(0xFF1E1E1E))
             }
             OutlinedButton(
                 onClick = {

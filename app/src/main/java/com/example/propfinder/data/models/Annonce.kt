@@ -1,7 +1,6 @@
 package com.example.propfinder.data.models
 
 data class Annonce(
-    val id: String = "",
     val idUser: String = "",
     val type: String = "", // "à vendre" ou "à louer"
     val titre: String = "",

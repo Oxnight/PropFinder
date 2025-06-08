@@ -1,9 +1,12 @@
 package com.example.propfinder.data.models
 
+import com.google.firebase.Timestamp
+
+
 data class Message(
-    val id: String = "",
-    val idUserSend: String = "",
-    val idAnnonce: String = "",
-    val date_envoi: Long = System.currentTimeMillis(),
-    val contenu: String = ""
+    var id : String = "",
+    val contenu: String = "",
+    val dateEnvoie: Timestamp = Timestamp.now(),
+    val idDiscussion: String = "",
+    val senderId: String ?= ""
 )
