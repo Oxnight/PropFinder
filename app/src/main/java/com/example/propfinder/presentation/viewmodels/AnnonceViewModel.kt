@@ -53,6 +53,6 @@ class AnnonceViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 println("Erreur lors de l'ajout du document : $e")
             }
-
+        return onResult(true)
     }
 }

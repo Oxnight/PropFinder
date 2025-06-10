@@ -53,11 +53,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 
 @Composable
-fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel) {
+fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController : NavController) {
 
 
     Column(
@@ -95,13 +96,13 @@ fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel) {
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 8.dp)
         )
-        FormulaireAvance(annonceViewModel = annonceViewModel, authViewModel = authViewModel)
+        FormulaireAvance(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController)
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel) {
+fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController) {
     val context = LocalContext.current
 
     var selectedOption by remember { mutableStateOf("") }
@@ -291,6 +292,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                                 imageUri = if (imageUris.isNotEmpty()) imageUris[0] else null
                             ) {
                                 Toast.makeText(context, "Annonce publiée avec succès", Toast.LENGTH_SHORT).show()
+                                navController.navigate("main")
                             }
                         } else {
                             Toast.makeText(context, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()

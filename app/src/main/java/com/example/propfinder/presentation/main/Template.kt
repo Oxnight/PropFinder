@@ -119,7 +119,7 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
             when (selectedIndex) {
                 0 -> Recherche(annonceViewModel = annonceViewModel)
                 1 -> OsmdroidMapView(annonceViewModel = annonceViewModel)
-                2 -> Publish(annonceViewModel = annonceViewModel, authViewModel = authViewModel)
+                2 -> Publish(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController)
                 3 -> DiscussionsPage(modifier = Modifier, navController = navController)
                 4 -> ProfilePage(navController= navController)
             }
