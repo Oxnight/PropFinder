@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.propfinder.presentation.main.Template
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -45,11 +46,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.propfinder),
-                contentDescription = "Logo",
-                modifier = Modifier.size(128.dp)
-            )
+
             Text(
                 text = "Connexion",
                 fontSize = 32.sp,

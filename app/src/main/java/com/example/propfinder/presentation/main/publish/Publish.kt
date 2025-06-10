@@ -54,9 +54,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
+import com.example.propfinder.presentation.viewmodels.AuthViewModel
 
 @Composable
-fun Publish(annonceViewModel: AnnonceViewModel) {
+fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel) {
 
 
     Column(
@@ -94,22 +95,15 @@ fun Publish(annonceViewModel: AnnonceViewModel) {
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 8.dp)
         )
-
-
-
-
-
-        FormulaireAvance(annonceViewModel = annonceViewModel)
+        FormulaireAvance(annonceViewModel = annonceViewModel, authViewModel = authViewModel)
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
+fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel) {
     val context = LocalContext.current
 
-
-    val options = listOf("à vendre", "à louer")
     var selectedOption by remember { mutableStateOf("") }
 
     var titre by remember { mutableStateOf("") }
@@ -239,7 +233,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
             }
 
             item {
-                Text("Prix: ${prix.toInt()} €", fontWeight = FontWeight.Bold)
+                Text("Prix: ${prix.toFloat()} €", fontWeight = FontWeight.Bold)
                 Slider(
                     value = prix,
                     onValueChange = { prix = it },
@@ -285,6 +279,22 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                                 && prix > 0f
                                 && selectedOption.isNotBlank()
 
+                        if (isFormValid) {
+                            annonceViewModel.publishAnnonce(
+                                titre = titre,
+                                description = description,
+                                caracteristiques = caracteristiques,
+                                localisation = localisation,
+                                prix = prix,
+                                type = selectedOption,
+                                idUser = authViewModel.getUserId() ?: "",
+                                imageUri = if (imageUris.isNotEmpty()) imageUris[0] else null
+                            ) {
+                                Toast.makeText(context, "Annonce publiée avec succès", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
+                        }
 
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -294,7 +304,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel) {
                     shape = RoundedCornerShape(12.dp),
 
                 ) {
-
+                    Text(text = "Envoyer")
                 }
             }
         }
