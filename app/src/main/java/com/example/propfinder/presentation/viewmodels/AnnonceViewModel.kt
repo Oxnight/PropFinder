@@ -19,6 +19,21 @@ class AnnonceViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val annonceCollection = firestore.collection("Annonce")
 
+    fun getAnnonceById(idAnnonce: String, onResult: (Map<String, Any?>?) -> Unit) {
+        annonceCollection.document(idAnnonce).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    onResult(document.data)  // ✅ renvoie tous les champs dans un Map
+                } else {
+                    onResult(null)
+                }
+            }
+            .addOnFailureListener {
+                println("Erreur lors de la récupération de l'annonce : ${it.message}")
+                onResult(null)
+            }
+    }
+
 
     fun getAnnonceTitleById(idAnnonce : String, onResult: (String ?) -> Unit) {
 

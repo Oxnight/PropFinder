@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,13 +39,102 @@ import coil.compose.AsyncImage
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Recherche(annonceViewModel: AnnonceViewModel) {
+    var search by remember { mutableStateOf("") }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1E1E1E))
+    ){
+        Column(){
+            Row(modifier = Modifier.padding(16.dp),){
+                TextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    placeholder = { Text("Search...") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .weight(1f) //
+                        .height(56.dp),
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                    textStyle = LocalTextStyle.current.copy(color = Color.Black),
+                )
+                Spacer(modifier = Modifier.width(8.dp)) // petit espace entre le champ et l'image
 
+                // ajouter le bouton de filtre
+                IconButton(onClick = { /* Action filtre */ }) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Filtrer",
+                        modifier = Modifier.size(56.dp),
+                        tint = Color(0xFFF07B42)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+            }
+            Row(modifier = Modifier.padding(16.dp)){
+                Annonce(viewModel = annonceViewModel)
+            }
+        }
+
+
+
+
+
+    }
 }
 
+@Composable
+fun Annonce(viewModel: AnnonceViewModel) {
+    var description by remember { mutableStateOf("") }
+    var localisation by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
+    var prix by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        viewModel.getAnnonceById("9OIiQkO26d5Ok9LfpHC2") { data: Map<String, Any?>? ->
+            data?.let {
+                description = it["description"]?.toString() ?: "N/A"
+                localisation = it["localisation"]?.toString() ?: "N/A"
+                date = it["date"]?.toString() ?: "N/A"
+                prix = it["prix"]?.toString() ?: "N/A"
+            }
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .clip(RoundedCornerShape(4.dp))   // ✅ Ajout de coins arrondis
+            .background(Color(0xFFD9D9D9))     // ✅ Couleur d'arrière-plan après le clip
+    ) {
+        Row(modifier = Modifier.padding(8.dp)) {
+            Image(
+                painter = painterResource(id = R.drawable.appartement1),
+                contentDescription = "Image par défaut",
+                modifier = Modifier
+                    .height(120.dp)
+                    .padding(end = 8.dp)
+            )
+            Column {
+                Text("$description", color = Color.Black, style = MaterialTheme.typography.titleLarge)
+                Text("$localisation", color = Color.Black, style = MaterialTheme.typography.bodyLarge)
+                Text("$prix", color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
+                Text("$date", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+
+/*
 @Composable
 fun AnnonceCard(annonce: com.example.propfinder.data.models.Annonce) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -151,3 +241,5 @@ fun AnnonceCard(annonce: com.example.propfinder.data.models.Annonce) {
         }
     }
 }
+
+ */
