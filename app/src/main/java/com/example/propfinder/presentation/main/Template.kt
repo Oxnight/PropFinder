@@ -1,7 +1,6 @@
 package com.example.propfinder.presentation.main
 
 import ProfilePage
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,7 +28,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,10 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.propfinder.presentation.main.annonce.AnnonceDetail
 import com.example.propfinder.presentation.main.messages.DiscussionsPage
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
@@ -51,9 +51,7 @@ import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 fun Template(authViewModel: AuthViewModel, navController: NavController) {
     var selectedIndex by remember { mutableStateOf(0) }
     val annonceViewModel: AnnonceViewModel = viewModel()
-
-
-
+    var selectedAnnonce by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -104,7 +102,10 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
                         icon = { Icon(pair.first, contentDescription = pair.second, modifier = Modifier.size(32.dp)) },
                         label = { Text(pair.second) },
                         selected = selectedIndex == idx,
-                        onClick = { selectedIndex = idx }
+                        onClick = {
+                            selectedIndex = idx
+                            selectedAnnonce = null
+                        }
                     )
                 }
             }
@@ -118,10 +119,21 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
         ) {
             when (selectedIndex) {
                 0 -> Recherche(annonceViewModel = annonceViewModel)
-                1 -> OsmdroidMapView(annonceViewModel = annonceViewModel)
+                1 -> OsmdroidMapView(annonceViewModel = annonceViewModel, navController = navController, onAnnonceClick = { titre -> selectedAnnonce = titre })
                 2 -> Publish(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController)
                 3 -> DiscussionsPage(modifier = Modifier, navController = navController)
-                4 -> ProfilePage(navController= navController)
+                4 -> ProfilePage(navController = navController)
+            }
+
+            if (selectedAnnonce != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0x99000000))
+                        .pointerInput(Unit) {}
+                ) {
+                    AnnonceDetail(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController, titre = selectedAnnonce!!)
+                }
             }
         }
     }

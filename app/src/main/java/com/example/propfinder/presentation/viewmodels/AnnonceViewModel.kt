@@ -105,4 +105,18 @@ class AnnonceViewModel : ViewModel() {
             }
         return onResult(true)
     }
+
+    fun getAllByTitre(titre: String, onResult: (List<Annonce>) -> Unit) {
+        annonceCollection.whereEqualTo("titre", titre).get()
+            .addOnSuccessListener { querySnapshot ->
+                val annonces = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(Annonce::class.java)
+                }
+                onResult(annonces)
+            }
+            .addOnFailureListener { exception ->
+                println("Erreur lors de la récupération des annonces : ${exception.message}")
+                onResult(emptyList())
+            }
+    }
 }
