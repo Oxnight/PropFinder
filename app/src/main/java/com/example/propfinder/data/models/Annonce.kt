@@ -9,6 +9,7 @@ data class Annonce(
     val caracteristiques: String = "",
     val date: Long = System.currentTimeMillis(),
     val localisation: String = "",
+    val coordonees: String = "",
     val images: List<String> = emptyList(),
     val actif: Boolean = true
 )

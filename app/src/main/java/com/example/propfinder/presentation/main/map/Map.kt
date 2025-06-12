@@ -3,6 +3,7 @@ package com.example.propfinder.presentation.main.map
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,19 +29,29 @@ fun OsmdroidMapView(annonceViewModel: AnnonceViewModel) {
                 val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 40, 50, false)
                 val scaledDrawable = BitmapDrawable(resources, scaledBitmap)
 
-                val locations = listOf(
-                    GeoPoint(47.637959, 6.862894),
-                    GeoPoint(47.636601, 6.856739),
-                    GeoPoint(47.644654, 6.853288)
-                )
+                annonceViewModel.getAllCoordinates { coordinatesList ->
+                    coordinatesList.forEach { coord ->
+                        val parts = coord.split(",") // Supposons que les coordonnées soient au format "latitude,longitude"
+                        if (parts.size == 2) {
+                            val latitude = parts[0].toDoubleOrNull()
+                            val longitude = parts[1].toDoubleOrNull()
+                            if (latitude != null && longitude != null) {
+                                val geoPoint = GeoPoint(latitude, longitude)
 
-                locations.forEach { location ->
-                    val marker = org.osmdroid.views.overlay.Marker(this)
-                    marker.position = location
-                    marker.icon = scaledDrawable
-                    marker.title = "Lieu"
-                    marker.snippet = "Un autre endroit"
-                    overlays.add(marker)
+                                // Récupération du titre et de l'adresse
+                                annonceViewModel.getLocalisationByCoordonnees(coord) { localisation ->
+                                    annonceViewModel.getTitleByCoordonnees(coord) { titre ->
+                                        val marker = org.osmdroid.views.overlay.Marker(this)
+                                        marker.position = geoPoint
+                                        marker.icon = scaledDrawable
+                                        marker.title = titre ?: "Titre inconnu"
+                                        marker.snippet = localisation ?: "Adresse inconnue"
+                                        overlays.add(marker)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },

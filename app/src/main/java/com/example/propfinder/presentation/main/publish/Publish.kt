@@ -1,5 +1,6 @@
 package com.example.propfinder.presentation.main.publish
 
+import android.location.Geocoder
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -8,43 +9,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.util.*
 
 @Composable
 fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController : NavController) {
@@ -65,7 +42,9 @@ fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, na
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFD9D9D9)),
+
     ) {
         Column(
             modifier = Modifier.padding(top = 16.dp)
@@ -112,6 +91,9 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
     var caracteristiques by remember { mutableStateOf("") }
     var localisation by remember { mutableStateOf("") }
 
+    var coordonnees by remember { mutableStateOf("") }
+    var geocodingError by remember { mutableStateOf<String?>(null) }
+
     var imageUris by remember { mutableStateOf(listOf<Uri>()) }
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -120,6 +102,31 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
     }
 
     var prix by remember { mutableStateOf(50f) }
+
+    LaunchedEffect(localisation) {
+        if (localisation.isNotBlank()) {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+                val addresses = withContext(Dispatchers.IO) {
+                    geocoder.getFromLocationName(localisation, 1)
+                }
+                if (!addresses.isNullOrEmpty()) {
+                    val location = addresses[0]
+                    coordonnees = "${location.latitude},${location.longitude}"
+                    geocodingError = null
+                } else {
+                    coordonnees = ""
+                    geocodingError = "Adresse introuvable."
+                }
+            } catch (e: IOException) {
+                coordonnees = ""
+                geocodingError = "Erreur de géocodage : ${e.localizedMessage}"
+            }
+        } else {
+            coordonnees = ""
+            geocodingError = null
+        }
+    }
 
 
     CompositionLocalProvider(
@@ -264,10 +271,25 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                 OutlinedTextField(
                     value = localisation,
                     onValueChange = { localisation = it },
-                    label = { Text("Localisation") },
-                    modifier = Modifier.fillMaxWidth(),
-
+                    label = { Text("Adresse") },
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                coordonnees?.let { coords ->
+                    Text(
+                        text = "Coordonnées : $coords",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.DarkGray
+                    )
+                }
+
+                geocodingError?.let { error ->
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
 
             item {
@@ -286,6 +308,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                                 description = description,
                                 caracteristiques = caracteristiques,
                                 localisation = localisation,
+                                coordonnees = coordonnees,
                                 prix = prix,
                                 type = selectedOption,
                                 idUser = authViewModel.getUserId() ?: "",
