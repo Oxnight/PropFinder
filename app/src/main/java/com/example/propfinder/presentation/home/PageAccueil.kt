@@ -124,7 +124,14 @@ fun Annonce(viewModel: AnnonceViewModel) {
                     .padding(end = 8.dp)
             )
             Column {
-                Text("$description", color = Color.Black, style = MaterialTheme.typography.titleLarge)
+                //Text("$description", color = Color.Black, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "$description",
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Text("$localisation", color = Color.Black, style = MaterialTheme.typography.bodyLarge)
                 Text("$prix", color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
                 Text("$date", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)

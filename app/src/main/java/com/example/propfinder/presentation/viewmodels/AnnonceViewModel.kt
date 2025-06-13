@@ -33,6 +33,21 @@ class AnnonceViewModel : ViewModel() {
                 onResult(null)
             }
     }
+    fun getUserNameById(idUser: String, onResult: (String?) -> Unit) {
+        val userCollection = firestore.collection("Utilisateur")
+        userCollection.document(idUser).get().addOnSuccessListener { document ->
+            val nom = document.getString("nom");
+            val prenom = document.getString("prenom");
+            if (nom != null && prenom != null) {
+                onResult("$nom $prenom")
+            } else {
+                onResult(null)
+            }
+        }.addOnFailureListener { exception ->
+            println("Erreur lors de la récupération du nom d'utilisateur : ${exception.message}")
+            onResult(null)
+        }
+    }
 
 
     fun getAnnonceTitleById(idAnnonce : String, onResult: (String ?) -> Unit) {
