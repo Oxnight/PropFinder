@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollConfiguration
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,7 +46,7 @@ import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Recherche(annonceViewModel: AnnonceViewModel) {
+fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit ) {
     var search by remember { mutableStateOf("") }
     Box(
         modifier = Modifier
@@ -80,7 +81,7 @@ fun Recherche(annonceViewModel: AnnonceViewModel) {
 
             }
             Row(modifier = Modifier.padding(16.dp)){
-                Annonce(viewModel = annonceViewModel)
+                Annonce(viewModel = annonceViewModel, onAnnonceClick = onAnnonceClick)
             }
         }
 
@@ -92,11 +93,12 @@ fun Recherche(annonceViewModel: AnnonceViewModel) {
 }
 
 @Composable
-fun Annonce(viewModel: AnnonceViewModel) {
+fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit) {
     var description by remember { mutableStateOf("") }
     var localisation by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
     var prix by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.getAnnonceById("9OIiQkO26d5Ok9LfpHC2") { data: Map<String, Any?>? ->
@@ -105,6 +107,7 @@ fun Annonce(viewModel: AnnonceViewModel) {
                 localisation = it["localisation"]?.toString() ?: "N/A"
                 date = it["date"]?.toString() ?: "N/A"
                 prix = it["prix"]?.toString() ?: "N/A"
+                title = it["titre"]?.toString() ?: "N/A"
             }
         }
     }
@@ -112,8 +115,11 @@ fun Annonce(viewModel: AnnonceViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clip(RoundedCornerShape(4.dp))   // ✅ Ajout de coins arrondis
-            .background(Color(0xFFD9D9D9))     // ✅ Couleur d'arrière-plan après le clip
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color(0xFFD9D9D9))
+            .clickable{
+                onAnnonceClick(title)
+            }
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
             Image(

@@ -118,7 +118,7 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
                 .background(Color(0xFF1E1E1E))
         ) {
             when (selectedIndex) {
-                0 -> Recherche(annonceViewModel = annonceViewModel)
+                0 -> Recherche(annonceViewModel = annonceViewModel, onAnnonceClick = { titre -> selectedAnnonce = titre })
                 1 -> OsmdroidMapView(annonceViewModel = annonceViewModel, navController = navController, onAnnonceClick = { titre -> selectedAnnonce = titre })
                 2 -> Publish(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController)
                 3 -> DiscussionsPage(modifier = Modifier, navController = navController)

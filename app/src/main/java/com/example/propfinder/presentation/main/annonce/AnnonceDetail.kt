@@ -115,47 +115,45 @@ fun AnnonceDetailContent(annonceViewModel: AnnonceViewModel, authViewModel: Auth
     ) {
         if (annonce != null) {
             Column {
-                /*if (annonce?.images?.isNotEmpty() == true) {
+                if (annonce?.images?.isNotEmpty() == true) {
                     Text("Images :", style = MaterialTheme.typography.bodyMedium)
                     annonce?.images?.forEach { imageUrl ->
                         Text(imageUrl, style = MaterialTheme.typography.bodyMedium)
                     }
                 } else {
-                    Text("Aucune image disponible", style = MaterialTheme.typography.bodyMedium)
-                }*/
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.appartement1),
-                        contentDescription = "Image par défaut",
-                        contentScale = ContentScale.Crop,
+                    Row(
                         modifier = Modifier
-                            .height(160.dp)
-                            .width(250.dp)
-                            .padding(end = 8.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                    )
-                    Column {
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                    ) {
                         Image(
                             painter = painterResource(id = R.drawable.appartement1),
                             contentDescription = "Image par défaut",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .height(80.dp)
+                                .height(160.dp)
+                                .width(250.dp)
+                                .padding(end = 8.dp)
                                 .clip(RoundedCornerShape(6.dp))
                         )
-                        Image(
-                            painter = painterResource(id = R.drawable.appartement1),
-                            contentDescription = "Image par défaut",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .height(80.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                        )
+                        Column {
+                            Image(
+                                painter = painterResource(id = R.drawable.appartement1),
+                                contentDescription = "Image par défaut",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .height(80.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                            )
+                            Image(
+                                painter = painterResource(id = R.drawable.appartement1),
+                                contentDescription = "Image par défaut",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .height(80.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                            )
+                        }
                     }
                 }
 
