@@ -47,6 +47,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+
             Text(
                 text = "Connexion",
                 fontSize = 32.sp,

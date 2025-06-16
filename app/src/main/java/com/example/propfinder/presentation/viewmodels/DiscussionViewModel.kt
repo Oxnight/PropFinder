@@ -9,7 +9,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
 
-//TODO : rendre ça optimiser enfaite pas tout supprimer à chaque nouveau message !!!!
 
 class DiscussionViewModel : ViewModel() {
 

@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
+    private val userCollection = firestore.collection("Utilisateur")
 
     var utilisateur by mutableStateOf<Utilisateur?>(null)
         private set
@@ -23,23 +24,50 @@ class ProfileViewModel : ViewModel() {
 
     private fun loadUtilisateur() {
         val userId = auth.currentUser?.uid ?: return
+
         firestore.collection("Utilisateur")
             .document(userId)
-            .get()
-            .addOnSuccessListener { doc ->
-                val user = Utilisateur(
-                    id = doc.getString("id") ?: userId,
-                    nom = doc.getString("nom") ?: "",
-                    prenom = doc.getString("prenom") ?: "",
-                    mail = doc.getString("mail") ?: "",
-                    age = doc.getString("age") ?: ""
-                )
-                Log.d("ProfileViewModel", "Données utilisateur récupérées : $user")
-                utilisateur = user
-            }
-            .addOnFailureListener { exception ->
-                Log.e("ProfileViewModel", "Erreur lors du chargement de l'utilisateur", exception)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.e("ProfileViewModel", "Erreur lors de l'écoute Firestore", exception)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val user = Utilisateur(
+                        id = snapshot.getString("id") ?: userId,
+                        nom = snapshot.getString("nom") ?: "",
+                        prenom = snapshot.getString("prenom") ?: "",
+                        mail = snapshot.getString("mail") ?: "",
+                        age = snapshot.getString("age") ?: ""
+                    )
+                    Log.d("ProfileViewModel", "Données utilisateur mises à jour : $user")
+                    utilisateur = user
+                }
             }
     }
+
+
+    ///ModifierProfile ViewModel
+    fun updateUserProfile(prenom: String, nom: String, age: String, email: String) {
+        val userId = auth.currentUser?.uid ?: return
+
+        val updates = mutableMapOf<String, Any>()
+        if (prenom.isNotBlank()) updates["prenom"] = prenom
+        if (nom.isNotBlank()) updates["nom"] = nom
+        if (age.isNotBlank()) updates["age"] = age
+        if (email.isNotBlank()) updates["mail"] = email
+
+        if (updates.isNotEmpty()) {
+            userCollection.document(userId).update(updates)
+                .addOnSuccessListener {
+                    Log.d("ProfileViewModel", "Profil mis à jour avec : $updates")
+                }
+                .addOnFailureListener {
+                    Log.e("ProfileViewModel", "Erreur lors de la mise à jour", it)
+                }
+        }
+    }
+
 
 }

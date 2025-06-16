@@ -15,7 +15,6 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
 
-//TODO : rendre ça optimiser enfaite pas tout supprimer à chaque nouveau message !!!!
 
 class MessageViewModel : ViewModel() {
 

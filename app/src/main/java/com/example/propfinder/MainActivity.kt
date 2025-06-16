@@ -18,6 +18,7 @@ import com.example.propfinder.presentation.auth.RegisterPage
 import com.example.propfinder.presentation.main.Template
 import com.example.propfinder.presentation.main.messages.ChatPage
 import com.example.propfinder.presentation.main.messages.DiscussionsPage
+import com.example.propfinder.presentation.main.profile.ModifierProfilePage
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.example.propfinder.presentation.viewmodels.MessageViewModel
 import com.example.propfinder.ui.theme.PropFinderTheme
@@ -76,6 +77,12 @@ fun PropFinderApp() {
         composable("profile_route") {
             ProfilePage(navController= navController)
         }
+
+        composable("modifier_profile_route") {
+            ModifierProfilePage(navController = navController)
+        }
+
+
 
     }
 }

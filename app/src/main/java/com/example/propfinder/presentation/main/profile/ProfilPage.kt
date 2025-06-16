@@ -87,6 +87,21 @@ fun ProfilePage(
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
+
+                    Spacer(modifier = Modifier.weight(0.8f))
+
+
+                    Button(
+                        onClick = {
+                            navController.navigate("modifier_profile_route")
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF444444)),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("Modifier", color = Color.White, fontSize = 14.sp)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

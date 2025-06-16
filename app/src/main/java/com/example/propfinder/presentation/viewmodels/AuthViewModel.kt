@@ -1,5 +1,6 @@
 package com.example.propfinder.presentation.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
@@ -29,6 +30,7 @@ class AuthViewModel : ViewModel() {
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
+
                 val uid = auth.currentUser?.uid
 
                 val userDataSendToFireStore = Utilisateur(
@@ -54,9 +56,27 @@ class AuthViewModel : ViewModel() {
     ) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
+                Log.d("AUTH", "Connexion réussie pour $email")
+
+                // → TEST FIRESTORE LECTURE
+                val uid = auth.currentUser?.uid ?: return@addOnSuccessListener
+                FirebaseFirestore.getInstance().collection("Utilisateur")
+                    .document(uid)
+                    .get()
+                    .addOnSuccessListener {
+                        Log.d("FIREBASE", "Lecture document OK : ${it.data}")
+                    }
+                    .addOnFailureListener {
+                        Log.e("FIREBASE", "Échec de lecture Firestore", it)
+                    }
+
                 onSuccess()
             }
+            .addOnFailureListener {
+                Log.e("AUTH", "Échec de connexion Firebase", it)
+            }
     }
+
 
     fun getUserId(): String? {
         return auth.currentUser?.uid
