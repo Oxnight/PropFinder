@@ -81,6 +81,10 @@ fun PropFinderApp() {
         composable("modifier_profile_route") {
             ModifierProfilePage(navController = navController)
         }
+        composable("message_route/{idAnnonce}") {backStackEntry ->
+            val idAnnonce = backStackEntry.arguments?.getString("idAnnonce")
+            ChatPage(navController, idAnnonce = idAnnonce)
+        }
 
 
 

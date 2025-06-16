@@ -52,30 +52,17 @@ class AuthViewModel : ViewModel() {
     fun signIn(
         email: String,
         password: String,
-        onSuccess: () -> Unit
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
     ) {
         auth.signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener {
-                Log.d("AUTH", "Connexion réussie pour $email")
-
-                // → TEST FIRESTORE LECTURE
-                val uid = auth.currentUser?.uid ?: return@addOnSuccessListener
-                FirebaseFirestore.getInstance().collection("Utilisateur")
-                    .document(uid)
-                    .get()
-                    .addOnSuccessListener {
-                        Log.d("FIREBASE", "Lecture document OK : ${it.data}")
-                    }
-                    .addOnFailureListener {
-                        Log.e("FIREBASE", "Échec de lecture Firestore", it)
-                    }
-
-                onSuccess()
-            }
-            .addOnFailureListener {
-                Log.e("AUTH", "Échec de connexion Firebase", it)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception ->
+                Log.e("AuthViewModel", "Échec de connexion", exception)
+                onFailure(exception)
             }
     }
+
 
 
     fun getUserId(): String? {

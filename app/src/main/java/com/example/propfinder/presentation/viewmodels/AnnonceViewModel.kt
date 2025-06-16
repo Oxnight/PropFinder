@@ -140,8 +140,9 @@ class AnnonceViewModel : ViewModel() {
         annonceCollection.whereEqualTo("titre", titre).get()
             .addOnSuccessListener { querySnapshot ->
                 val annonces = querySnapshot.documents.mapNotNull { document ->
-                    document.toObject(Annonce::class.java)
+                    document.toObject(Annonce::class.java)?.copy(id = document.id)
                 }
+
                 onResult(annonces)
             }
             .addOnFailureListener { exception ->

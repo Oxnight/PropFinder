@@ -185,6 +185,7 @@ fun AnnonceDetailContent(annonceViewModel: AnnonceViewModel, authViewModel: Auth
                     Button(
                         onClick = {
                             // CONTACTER l'utilisateur
+                            navController.navigate("message_route/${annonce?.id}")
                         }
                     ) {
                         Icon(

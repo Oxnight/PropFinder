@@ -1,6 +1,7 @@
 package com.example.propfinder.presentation.auth
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
@@ -33,6 +35,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -93,9 +96,28 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Button(
                 onClick = {
-                    authViewModel.signIn(
-                        email, password,
-                        onSuccess = { navController.navigate("main") })
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        authViewModel.signIn(
+                            email,
+                            password,
+                            onSuccess = {
+                                navController.navigate("main")
+                            },
+                            onFailure = {
+                                Toast.makeText(
+                                    context,
+                                    "Email ou mot de passe incorrect",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "L’email et le mot de passe sont obligatoires",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
@@ -132,12 +154,17 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+
+    fun isEmailValid(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1E1E1E))
-    ){
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -150,6 +177,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 contentDescription = "Logo",
                 modifier = Modifier.size(128.dp)
             )
+
             Text(
                 text = "Créer un compte",
                 fontSize = 32.sp,
@@ -179,7 +207,6 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -192,7 +219,6 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -205,7 +231,6 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -220,46 +245,54 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
                 modifier = Modifier.fillMaxWidth(),
-
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-
-
             Button(
                 onClick = {
-                    authViewModel.signUp(
-                        email = email,
-                        password = password,
-                        age = age,
-                        prenom = firstName,
-                        nom = lastName,
-                        onSuccess = {
-                            navController.navigate("main");
+                    when {
+                        email.isBlank() || password.isBlank() -> {
+                            Toast.makeText(context, "Email et mot de passe obligatoires", Toast.LENGTH_SHORT).show()
                         }
-                    )
-
+                        !isEmailValid(email) -> {
+                            Toast.makeText(context, "Format de l'email invalide", Toast.LENGTH_SHORT).show()
+                        }
+                        password.length < 6 -> {
+                            Toast.makeText(context, "Le mot de passe doit contenir au moins 6 caractères", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            authViewModel.signUp(
+                                email = email,
+                                password = password,
+                                age = age,
+                                prenom = firstName,
+                                nom = lastName,
+                                onSuccess = {
+                                    navController.navigate("main")
+                                }
+                            )
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
-
             ) {
                 Text("Créer votre compte", color = Color(0xFF1E1E1E))
             }
+
             OutlinedButton(
                 onClick = {
                     navController.popBackStack()
                 },
-                modifier = Modifier
-                    .padding(5.dp),
+                modifier = Modifier.padding(5.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,     // fond transparent
-                    contentColor = Color(0xFFF07B42)        // couleur du texte
+                    containerColor = Color.Transparent,
+                    contentColor = Color(0xFFF07B42)
                 ),
-                border = BorderStroke(2.dp, Color(0xFFF07B42)) // contour orange
+                border = BorderStroke(2.dp, Color(0xFFF07B42))
             ) {
                 Text("Retour")
             }

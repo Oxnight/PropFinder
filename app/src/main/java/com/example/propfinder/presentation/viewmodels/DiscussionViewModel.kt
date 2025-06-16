@@ -113,12 +113,32 @@ class DiscussionViewModel : ViewModel() {
             }
     }
 
-
-
-
-
     override fun onCleared() {
         super.onCleared()
         listenerRegistration?.remove()
     }
+
+    fun createDiscussion(
+        idAnnonce: String,
+        idUserSend: String,
+        onResult: (Discussion?) -> Unit
+    )  {
+        val newDocRef = discussionCollection.document()
+
+        val discussion = Discussion(
+            id = newDocRef.id,
+            idUserSend = idUserSend,
+            idAnnonce = idAnnonce,
+            date = Timestamp.now()
+        )
+
+        newDocRef.set(discussion)
+            .addOnSuccessListener {
+                onResult(discussion)
+            }
+            .addOnFailureListener {
+                // Log ou message d'erreur si besoin
+            }
+    }
+
 }

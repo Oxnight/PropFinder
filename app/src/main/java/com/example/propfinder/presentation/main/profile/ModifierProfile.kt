@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +31,7 @@ import androidx.navigation.NavController
 import com.example.propfinder.presentation.viewmodels.ProfileViewModel
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun ModifierProfilePage(

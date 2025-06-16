@@ -40,48 +40,57 @@ import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.example.propfinder.presentation.viewmodels.MessageViewModel
 import com.example.propfinder.presentation.viewmodels.DiscussionViewModel
+import com.example.propfinder.presentation.viewmodels.ProfileViewModel
 import kotlin.math.log
 
 
 @Composable
-fun ChatPage(navController: NavController,idDiscussion : String) {
+fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnonce : String? = null) {
 
     val authViewModel: AuthViewModel = viewModel()
     val discussionViewModel: DiscussionViewModel = viewModel()
     val annonceViewModel: AnnonceViewModel = viewModel()
     val messageViewModel: MessageViewModel = viewModel()
 
+
+
     val userId = authViewModel.getUserId()
     val userEnFace = remember { mutableStateOf("") }
     val input = remember { mutableStateOf("") }
+    val discussionIdState = remember { mutableStateOf(idDiscussion) }
 
-    LaunchedEffect(idDiscussion) {
-        discussionViewModel.getDiscussionById(idDiscussion) { discussion ->
-            if (discussion != null) {
-                if (discussion.idUserSend == userId) {
-                    // Moi = sender → chercher le proprio de l’annonce
-                    annonceViewModel.getUserIdById(discussion.idAnnonce) { idUser ->
-                        authViewModel.getUserNameById(idUser ?: "") { nomPrenom ->
+
+
+
+
+    LaunchedEffect(discussionIdState.value) {
+        val id = discussionIdState.value
+        if (id != null) {
+            discussionViewModel.getDiscussionById(id) { discussion ->
+                if (discussion != null) {
+                    if (discussion.idUserSend == userId) {
+                        annonceViewModel.getUserIdById(discussion.idAnnonce) { idUser ->
+                            authViewModel.getUserNameById(idUser ?: "") { nomPrenom ->
+                                userEnFace.value = nomPrenom ?: "Nom inconnu"
+                            }
+                        }
+                    } else {
+                        authViewModel.getUserNameById(discussion.idUserSend) { nomPrenom ->
                             userEnFace.value = nomPrenom ?: "Nom inconnu"
                         }
-                    }
-                } else {
-                    // Moi = proprio → afficher l’envoyeur
-                    authViewModel.getUserNameById(discussion.idUserSend) { nomPrenom ->
-                        userEnFace.value = nomPrenom ?: "Nom inconnu"
                     }
                 }
             }
         }
     }
 
-    LaunchedEffect(idDiscussion) {
-        messageViewModel.loadMessagesForDiscussion(idDiscussion)
+
+    LaunchedEffect(discussionIdState.value) {
+        val id = discussionIdState.value
+        if (id != null) {
+            messageViewModel.loadMessagesForDiscussion(id)
+        }
     }
-
-
-
-
 
 
 
@@ -164,16 +173,39 @@ fun ChatPage(navController: NavController,idDiscussion : String) {
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-                    val messageToInsert = Message(
-                        contenu = input.value,
-                        idDiscussion = idDiscussion,
-                        senderId = authViewModel.getUserId()
-                    )
-                    if (input.value != "") {
+                    if (input.value.isNotBlank() && idDiscussion != null) {
+                        val messageToInsert = Message(
+                            contenu = input.value,
+                            idDiscussion = idDiscussion,
+                            senderId = authViewModel.getUserId()
+                        )
                         messageViewModel.insertMessage(messageToInsert)
-                        input.value = "";
+                        input.value = ""
+                    } else if (input.value.isNotBlank()  && idDiscussion == null) {
+                        if (idAnnonce != null && userId != null) {
+                            discussionViewModel.createDiscussion(
+                                idAnnonce = idAnnonce,
+                                idUserSend = userId,
+                                onResult = { discussion ->
+                                    if (discussion != null) {
+                                        // On met à jour la discussion en cours
+                                        discussionIdState.value = discussion.id
+
+                                        val messageToInsert = Message(
+                                            contenu = input.value,
+                                            idDiscussion = discussion.id,
+                                            senderId = authViewModel.getUserId()
+                                        )
+                                        messageViewModel.insertMessage(messageToInsert)
+                                        input.value = ""
+                                    }
+                                }
+                            )
+                        }
+
                     }
-                },
+                }
+                ,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42))
             ) {
                 Text("→", color = Color.Black)
