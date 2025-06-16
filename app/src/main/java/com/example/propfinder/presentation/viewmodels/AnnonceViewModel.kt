@@ -19,6 +19,36 @@ class AnnonceViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val annonceCollection = firestore.collection("Annonce")
 
+    fun getAnnonceById(idAnnonce: String, onResult: (Map<String, Any?>?) -> Unit) {
+        annonceCollection.document(idAnnonce).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    onResult(document.data)  // ✅ renvoie tous les champs dans un Map
+                } else {
+                    onResult(null)
+                }
+            }
+            .addOnFailureListener {
+                println("Erreur lors de la récupération de l'annonce : ${it.message}")
+                onResult(null)
+            }
+    }
+    fun getUserNameById(idUser: String, onResult: (String?) -> Unit) {
+        val userCollection = firestore.collection("Utilisateur")
+        userCollection.document(idUser).get().addOnSuccessListener { document ->
+            val nom = document.getString("nom");
+            val prenom = document.getString("prenom");
+            if (nom != null && prenom != null) {
+                onResult("$nom $prenom")
+            } else {
+                onResult(null)
+            }
+        }.addOnFailureListener { exception ->
+            println("Erreur lors de la récupération du nom d'utilisateur : ${exception.message}")
+            onResult(null)
+        }
+    }
+
 
     fun getAnnonceTitleById(idAnnonce : String, onResult: (String ?) -> Unit) {
 
@@ -104,5 +134,33 @@ class AnnonceViewModel : ViewModel() {
                 println("Erreur lors de l'ajout du document : $e")
             }
         return onResult(true)
+    }
+
+    fun getAllByTitre(titre: String, onResult: (List<Annonce>) -> Unit) {
+        annonceCollection.whereEqualTo("titre", titre).get()
+            .addOnSuccessListener { querySnapshot ->
+                val annonces = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(Annonce::class.java)
+                }
+                onResult(annonces)
+            }
+            .addOnFailureListener { exception ->
+                println("Erreur lors de la récupération des annonces : ${exception.message}")
+                onResult(emptyList())
+            }
+    }
+
+    fun getAllAnnonces(onResult: (List<Annonce>) -> Unit) {
+        annonceCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                val annonces = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(Annonce::class.java)
+                }
+                onResult(annonces)
+            }
+            .addOnFailureListener { exception ->
+                println("Erreur lors de la récupération des annonces : ${exception.message}")
+                onResult(emptyList())
+            }
     }
 }

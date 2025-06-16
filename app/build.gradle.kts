@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("org.osmdroid:osmdroid-android:6.1.16")
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))

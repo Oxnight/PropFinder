@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollConfiguration
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,13 +40,191 @@ import coil.compose.AsyncImage
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.ui.draw.clip
+import com.example.propfinder.data.models.Annonce
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Recherche(annonceViewModel: AnnonceViewModel) {
+fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit ) {
+    var search by remember { mutableStateOf("") }
+    CompositionLocalProvider(
+        LocalOverscrollConfiguration provides null
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF1E1E1E))
+        ){
+            Column(){
+                Row(modifier = Modifier.padding(16.dp),){
+                    TextField(
+                        value = search,
+                        onValueChange = { search = it },
+                        placeholder = { Text("Search...") },
+                        singleLine = true,
+                        modifier = Modifier
+                            .weight(1f) //
+                            .height(56.dp),
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                        textStyle = LocalTextStyle.current.copy(color = Color.Black),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp)) // petit espace entre le champ et l'image
 
+                    // ajouter le bouton de filtre
+                    IconButton(onClick = { /* Action filtre */ }) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filtrer",
+                            modifier = Modifier.size(56.dp),
+                            tint = Color(0xFFF07B42)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                }
+                Row(modifier = Modifier.padding(16.dp)){
+                    Annonce(viewModel = annonceViewModel, onAnnonceClick = onAnnonceClick)
+                }
+            }
+        }
+    }
 }
 
+@Composable
+fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit) {
+    var annonces by remember { mutableStateOf<List<Annonce>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getAllAnnonces { allAnnonces ->
+            annonces = allAnnonces
+        }
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(annonces) { annonce ->
+            val titre = annonce.titre?.toString() ?: ""
+            val description = annonce.description?.toString() ?: ""
+            val localisation = annonce.localisation?.toString() ?: ""
+            val prix = annonce.prix?.toString() ?: ""
+            val date = annonce.date?.toString() ?: ""
+
+            AnnonceItem(
+                title = titre,
+                description = description,
+                localisation = localisation,
+                prix = prix,
+                date = date,
+                onClick = { onAnnonceClick(titre) }
+            )
+        }
+    }
+}
+
+@Composable
+fun AnnonceItem(
+    title: String,
+    description: String,
+    localisation: String,
+    prix: String,
+    date: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color(0xFFD9D9D9))
+            .clickable { onClick() }
+            .padding(8.dp)
+    ) {
+        Row {
+            Image(
+                painter = painterResource(id = R.drawable.appartement1),
+                contentDescription = "Image par défaut",
+                modifier = Modifier
+                    .height(120.dp)
+                    .padding(end = 8.dp)
+            )
+            Column {
+                Text(
+                    text = title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(localisation, color = Color.Black, style = MaterialTheme.typography.bodyLarge)
+                Text(prix, color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
+                Text(date, color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+/*
+@Composable
+fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit) {
+    var description by remember { mutableStateOf("") }
+    var localisation by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
+    var prix by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        viewModel.getAnnonceById("9OIiQkO26d5Ok9LfpHC2") { data: Map<String, Any?>? ->
+            data?.let {
+                description = it["description"]?.toString() ?: "N/A"
+                localisation = it["localisation"]?.toString() ?: "N/A"
+                date = it["date"]?.toString() ?: "N/A"
+                prix = it["prix"]?.toString() ?: "N/A"
+                title = it["titre"]?.toString() ?: "N/A"
+            }
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color(0xFFD9D9D9))
+            .clickable{
+                onAnnonceClick(title)
+            }
+    ) {
+        Row(modifier = Modifier.padding(8.dp)) {
+            Image(
+                painter = painterResource(id = R.drawable.appartement1),
+                contentDescription = "Image par défaut",
+                modifier = Modifier
+                    .height(120.dp)
+                    .padding(end = 8.dp)
+            )
+            Column {
+                //Text("$description", color = Color.Black, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "$description",
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text("$localisation", color = Color.Black, style = MaterialTheme.typography.bodyLarge)
+                Text("$prix", color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
+                Text("$date", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}*/
+
+
+/*
 @Composable
 fun AnnonceCard(annonce: com.example.propfinder.data.models.Annonce) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -151,3 +331,5 @@ fun AnnonceCard(annonce: com.example.propfinder.data.models.Annonce) {
         }
     }
 }
+
+ */

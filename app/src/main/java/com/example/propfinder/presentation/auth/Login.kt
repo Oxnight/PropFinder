@@ -46,6 +46,11 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.propfinder),
+                contentDescription = "Logo",
+                modifier = Modifier.size(128.dp)
+            )
 
 
             Text(
