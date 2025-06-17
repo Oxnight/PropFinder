@@ -49,6 +49,9 @@ import com.example.propfinder.data.models.Annonce
 @Composable
 fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit ) {
     var search by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("Tous") }
+    var showDialog by remember { mutableStateOf(false) }
+
     CompositionLocalProvider(
         LocalOverscrollConfiguration provides null
     ) {
@@ -58,6 +61,39 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
                 .background(Color(0xFF1E1E1E))
         ){
             Column(){
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        confirmButton = {},
+                        title = { Text("Filtrer les annonces") },
+                        text = {
+                            Column {
+                                listOf("Tous", "à louer", "à vendre").forEach { type ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                selectedFilter = type
+                                                showDialog = false
+                                            }
+                                            .padding(8.dp)
+                                    ) {
+                                        RadioButton(
+                                            selected = selectedFilter == type,
+                                            onClick = {
+                                                selectedFilter = type
+                                                showDialog = false
+                                            }
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(type)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
                 Row(modifier = Modifier.padding(16.dp),){
                     TextField(
                         value = search,
@@ -73,7 +109,7 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
                     Spacer(modifier = Modifier.width(8.dp)) // petit espace entre le champ et l'image
 
                     // ajouter le bouton de filtre
-                    IconButton(onClick = { /* Action filtre */ }) {
+                    IconButton(onClick = { showDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.FilterList,
                             contentDescription = "Filtrer",
@@ -85,7 +121,7 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
 
                 }
                 Row(modifier = Modifier.padding(16.dp)){
-                    Annonce(viewModel = annonceViewModel, onAnnonceClick = onAnnonceClick)
+                    Annonce(viewModel = annonceViewModel, onAnnonceClick = onAnnonceClick, selectedFilter = selectedFilter, search = search)
                 }
             }
         }
@@ -93,12 +129,22 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
 }
 
 @Composable
-fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit) {
+fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selectedFilter: String, search: String) {
     var annonces by remember { mutableStateOf<List<Annonce>>(emptyList()) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(selectedFilter, search) {
         viewModel.getAllAnnonces { allAnnonces ->
-            annonces = allAnnonces
+            val filtered = when (selectedFilter) {
+                "à louer" -> allAnnonces.filter { it.type == "à louer" }
+                "à vendre" -> allAnnonces.filter { it.type == "à vendre" }
+                else -> allAnnonces
+            }
+
+            annonces = if (search.isNotBlank()) {
+                filtered.filter { it.titre?.contains(search, ignoreCase = true) == true }
+            } else {
+                filtered
+            }
         }
     }
 
