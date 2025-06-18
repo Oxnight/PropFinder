@@ -159,14 +159,14 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
             val description = annonce.description?.toString() ?: ""
             val localisation = annonce.localisation?.toString() ?: ""
             val prix = annonce.prix?.toString() ?: ""
-            val date = annonce.date?.toString() ?: ""
+            val dateLisible = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(annonce.date))
 
             AnnonceItem(
                 title = titre,
                 description = description,
                 localisation = localisation,
-                prix = prix,
-                date = date,
+                prix = prix + " €",
+                date = dateLisible,
                 onClick = { onAnnonceClick(titre) }
             )
         }

@@ -1,6 +1,5 @@
 package com.example.propfinder.presentation.main.messages
 
-
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,8 +32,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import com.example.propfinder.R
-
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.zIndex
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -155,51 +159,66 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
         discussionViewModel.loadDiscussionsForUser(userId.toString())
     }
 
-    Column(
-        modifier = modifier
-            .background(Color(0xFFF5F5F5))
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Titre
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = modifier
+                .background(Color(0xFFF5F5F5))
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Filled.Email,
-                contentDescription = "Discussions",
-                modifier = Modifier.size(26.dp),
-                tint = Color.Black
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Mes discussions",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Black
-            )
-        }
+            // Titre
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Email,
+                    contentDescription = "Discussions",
+                    modifier = Modifier.size(26.dp),
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Mes discussions",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.Black
+                )
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(discussionViewModel.discussions) { discussion ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { navController.navigate("chat/${discussion.id}") },
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    OneDiscussion(discussion, navController)
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(discussionViewModel.discussions) { discussion ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("chat/${discussion.id}") },
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        OneDiscussion(discussion, navController)
+                    }
                 }
             }
+        }
+
+        FloatingActionButton(
+            onClick = { /* Rien pour l’instant */ },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+                .zIndex(1f)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Créer une discussion"
+            )
         }
     }
 }
