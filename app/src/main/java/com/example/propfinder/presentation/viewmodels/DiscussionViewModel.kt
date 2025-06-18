@@ -141,4 +141,21 @@ class DiscussionViewModel : ViewModel() {
             }
     }
 
+    fun findDiscussion(
+        idAnnonce: String,
+        idUserSend: String,
+        onResult: (Discussion?) -> Unit
+    ) {
+        discussionCollection
+            .whereEqualTo("idAnnonce", idAnnonce)
+            .whereEqualTo("idUserSend", idUserSend)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+                onResult(snap.documents.firstOrNull()?.toObject(Discussion::class.java))
+            }
+            .addOnFailureListener { onResult(null) }
+    }
+
+
 }

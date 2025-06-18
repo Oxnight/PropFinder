@@ -5,42 +5,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import com.example.propfinder.R
 import androidx.compose.ui.Modifier
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.zIndex
-import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,20 +26,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.propfinder.R
 import com.example.propfinder.data.models.Discussion
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.example.propfinder.presentation.viewmodels.DiscussionViewModel
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 
-//TODO : quand il crée une discussion il doit mettre dans idUserSend l'utilisateur actuel
 @Composable
-fun OneDiscussion(discussion: Discussion, navController: NavController ) {
-    val annonceViewModel : AnnonceViewModel = viewModel();
-    val authViewModel : AuthViewModel = viewModel()
+fun OneDiscussion(discussion: Discussion, navController: NavController) {
+    val annonceViewModel: AnnonceViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
     val discussionViewModel: DiscussionViewModel = viewModel()
-
 
     val formatter = SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH)
     val formattedDate = formatter.format(discussion.date.toDate())
@@ -71,17 +48,14 @@ fun OneDiscussion(discussion: Discussion, navController: NavController ) {
 
     val currentUserId = authViewModel.getUserId()
 
-    // 🔹 Charger le titre de l’annonce
     LaunchedEffect(discussion.idAnnonce) {
         annonceViewModel.getAnnonceTitleById(discussion.idAnnonce) { titre ->
             titreAnnonceState.value = titre ?: "Titre inconnu"
         }
     }
 
-    // 🔹 Charger le nom de l’autre utilisateur (sender ou receiver)
     LaunchedEffect(discussion.id) {
         if (discussion.idUserSend == currentUserId) {
-            // Moi j’ai envoyé → trouver le propriétaire de l’annonce (le receveur)
             annonceViewModel.getUserIdById(discussion.idAnnonce) { idUser ->
                 if (idUser != null) {
                     authViewModel.getUserNameById(idUser) { nomPrenom ->
@@ -90,19 +64,17 @@ fun OneDiscussion(discussion: Discussion, navController: NavController ) {
                 }
             }
         } else {
-            // Moi je suis le receveur → afficher l’expéditeur
             authViewModel.getUserNameById(discussion.idUserSend) { nomPrenom ->
                 roleState.value = nomPrenom ?: "Nom inconnu"
             }
         }
     }
 
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(5.dp))
-            .padding(10.dp)
+            .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(16.dp))
+            .padding(16.dp)
             .clickable {
                 navController.navigate("chat_route/${discussion.id}")
             },
@@ -111,29 +83,36 @@ fun OneDiscussion(discussion: Discussion, navController: NavController ) {
         Image(
             painter = painterResource(id = R.drawable.avatar1),
             contentDescription = "Avatar utilisateur",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(60.dp)
+                .size(56.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color.Black, shape = CircleShape)
+                .border(1.dp, Color.Gray, shape = CircleShape)
         )
 
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
         Column(
-            modifier = Modifier.weight(1f) // occupe tout l’espace restant
+            modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = titreAnnonceState.value, //Appartemetn 3 pièce
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 3.dp)
+                text = titreAnnonceState.value,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = Color.Black
             )
             Text(
                 text = roleState.value,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(bottom = 3.dp)
+                color = Color.DarkGray
             )
-            Text(text = formattedDate)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formattedDate,
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
         }
 
         IconButton(onClick = {
@@ -142,8 +121,8 @@ fun OneDiscussion(discussion: Discussion, navController: NavController ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_delete),
                 contentDescription = "Supprimer",
-                modifier = Modifier.size(24.dp),
-                tint = Color.Black
+                tint = Color(0xFFB00020),
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -162,32 +141,31 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = modifier
-                .background(Color(0xFFF5F5F5))
+                .background(Color(0xFF1E1E1E))
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
-            // Titre
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Email,
                     contentDescription = "Discussions",
-                    modifier = Modifier.size(26.dp),
-                    tint = Color.Black
+                    tint = Color(0xFFF07B42),
+                    modifier = Modifier.size(26.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Mes discussions",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFF07B42)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -195,11 +173,9 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
             ) {
                 items(discussionViewModel.discussions) { discussion ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { navController.navigate("chat/${discussion.id}") },
-                        shape = RoundedCornerShape(12.dp),
-                        elevation = CardDefaults.cardElevation(4.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(6.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         OneDiscussion(discussion, navController)
@@ -207,20 +183,5 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
                 }
             }
         }
-
-        FloatingActionButton(
-            onClick = { /* Rien pour l’instant */ },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .zIndex(1f)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Créer une discussion"
-            )
-        }
     }
 }
-
-

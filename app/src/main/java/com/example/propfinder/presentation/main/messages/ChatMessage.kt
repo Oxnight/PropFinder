@@ -63,26 +63,32 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
 
 
 
-    LaunchedEffect(discussionIdState.value) {
-        val id = discussionIdState.value
-        if (id != null) {
-            discussionViewModel.getDiscussionById(id) { discussion ->
-                if (discussion != null) {
-                    if (discussion.idUserSend == userId) {
-                        annonceViewModel.getUserIdById(discussion.idAnnonce) { idUser ->
-                            authViewModel.getUserNameById(idUser ?: "") { nomPrenom ->
-                                userEnFace.value = nomPrenom ?: "Nom inconnu"
-                            }
-                        }
-                    } else {
-                        authViewModel.getUserNameById(discussion.idUserSend) { nomPrenom ->
-                            userEnFace.value = nomPrenom ?: "Nom inconnu"
+    LaunchedEffect(idAnnonce) {
+        // Si on arrive depuis l’annonce :
+        if (discussionIdState.value == null && idAnnonce != null && userId != null) {
+
+            // 1. Chercher d’abord une discussion existante
+            discussionViewModel.findDiscussion(idAnnonce, userId) { existing ->
+                if (existing != null) {
+                    // → On la ré-utilise
+                    discussionIdState.value = existing.id
+                    messageViewModel.loadMessagesForDiscussion(existing.id)
+                } else {
+                    // 2. Sinon seulement, on la crée
+                    discussionViewModel.createDiscussion(
+                        idAnnonce = idAnnonce,
+                        idUserSend = userId
+                    ) { created ->
+                        if (created != null) {
+                            discussionIdState.value = created.id
+                            // Pas besoin de re-charger, le Flow/LiveData réagira
                         }
                     }
                 }
             }
         }
     }
+
 
 
     LaunchedEffect(discussionIdState.value) {
@@ -173,36 +179,38 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-                    if (input.value.isNotBlank() && idDiscussion != null) {
+                    val currentDiscussionId = discussionIdState.value
+
+                    if (input.value.isNotBlank() && currentDiscussionId != null) {
+                        // discussion déjà prête → on insère juste le message
                         val messageToInsert = Message(
                             contenu = input.value,
-                            idDiscussion = idDiscussion,
+                            idDiscussion = currentDiscussionId,
                             senderId = authViewModel.getUserId()
                         )
                         messageViewModel.insertMessage(messageToInsert)
                         input.value = ""
-                    } else if (input.value.isNotBlank()  && idDiscussion == null) {
+                    }
+                    else if (input.value.isNotBlank() && currentDiscussionId == null) {
+                        // il faut encore créer la discussion (cas théorique : la création a échoué
+                        // ou la LaunchedEffect n’a pas encore fini)
                         if (idAnnonce != null && userId != null) {
                             discussionViewModel.createDiscussion(
                                 idAnnonce = idAnnonce,
-                                idUserSend = userId,
-                                onResult = { discussion ->
-                                    if (discussion != null) {
-                                        // On met à jour la discussion en cours
-                                        discussionIdState.value = discussion.id
-
-                                        val messageToInsert = Message(
-                                            contenu = input.value,
-                                            idDiscussion = discussion.id,
-                                            senderId = authViewModel.getUserId()
-                                        )
-                                        messageViewModel.insertMessage(messageToInsert)
-                                        input.value = ""
-                                    }
+                                idUserSend = userId
+                            ) { created ->
+                                created?.let {
+                                    discussionIdState.value = it.id   // met à jour l’état
+                                    val message = Message(
+                                        contenu = input.value,
+                                        idDiscussion = it.id,
+                                        senderId = authViewModel.getUserId()
+                                    )
+                                    messageViewModel.insertMessage(message)
+                                    input.value = ""
                                 }
-                            )
+                            }
                         }
-
                     }
                 }
                 ,
