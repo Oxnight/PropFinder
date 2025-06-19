@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.propfinder.R
 import com.example.propfinder.data.models.Annonce
@@ -159,15 +163,22 @@ fun AnnonceDetailContent(annonceViewModel: AnnonceViewModel, authViewModel: Auth
 
                 Row {
                     Column {
-                        Text("  ${annonce?.prix} €",
-                            style = MaterialTheme.typography.bodyMedium.copy(
+
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 4.dp)) {
+                            Icon(Icons.Default.AttachMoney, contentDescription = null, tint = Color(0xFFF07B42))
+                            Spacer(modifier = Modifier.width(1.dp))
+                            Text(text = "  ${annonce?.prix} €",
+                                color = Color(0xFFF07B42),
                                 fontWeight = FontWeight.Bold,
-                                fontSize = MaterialTheme.typography.titleMedium.fontSize),
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
+                                fontSize = 22.sp,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
 
                         Row(
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
@@ -175,18 +186,26 @@ fun AnnonceDetailContent(annonceViewModel: AnnonceViewModel, authViewModel: Auth
                                 modifier = Modifier.size(18.dp),
                                 tint = Color(0xFF1E1E1E)
                             )
-                            Text("${annonce?.localisation}",
+                            Text(
+                                "${annonce?.localisation}",
                                 style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                                maxLines = 2, // ou plus selon le besoin
+                                softWrap = true,
+                                modifier = Modifier
+                                    .padding(start = 4.dp)
+                                    .widthIn(max = 200.dp) // largeur max à ajuster selon la maquette
                             )
                         }
                     }
-
                     Spacer(modifier = Modifier.weight(1f))
                     Button(
+                        modifier = Modifier.padding(top = 8.dp),
                         onClick = {
-                            // CONTACTER l'utilisateur
                             navController.navigate("message_route/${annonce?.id}")
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFF07B42) // orange
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Send,
@@ -195,6 +214,8 @@ fun AnnonceDetailContent(annonceViewModel: AnnonceViewModel, authViewModel: Auth
                             tint = Color.White
                         )
                     }
+
+
                 }
 
                 Row {

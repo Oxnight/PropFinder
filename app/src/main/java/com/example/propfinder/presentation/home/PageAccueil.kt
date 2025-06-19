@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,6 +45,7 @@ import java.util.*
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
 import com.example.propfinder.data.models.Annonce
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -163,10 +166,10 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
 
             AnnonceItem(
                 title = titre,
-                description = description,
                 localisation = localisation,
                 prix = prix + " €",
                 date = dateLisible,
+                type = annonce.type,
                 onClick = { onAnnonceClick(titre) }
             )
         }
@@ -176,206 +179,107 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
 @Composable
 fun AnnonceItem(
     title: String,
-    description: String,
     localisation: String,
     prix: String,
     date: String,
+    type: String,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFD9D9D9))
-            .clickable { onClick() }
-            .padding(8.dp)
-    ) {
-        Row {
-            Image(
-                painter = painterResource(id = R.drawable.appartement1),
-                contentDescription = "Image par défaut",
-                modifier = Modifier
-                    .height(120.dp)
-                    .padding(end = 8.dp)
-            )
-            Column {
-                Text(
-                    text = title,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.Black,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(localisation, color = Color.Black, style = MaterialTheme.typography.bodyLarge)
-                Text(prix, color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
-                Text(date, color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}
-
-/*
-@Composable
-fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit) {
-    var description by remember { mutableStateOf("") }
-    var localisation by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
-    var prix by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-
-    LaunchedEffect(Unit) {
-        viewModel.getAnnonceById("9OIiQkO26d5Ok9LfpHC2") { data: Map<String, Any?>? ->
-            data?.let {
-                description = it["description"]?.toString() ?: "N/A"
-                localisation = it["localisation"]?.toString() ?: "N/A"
-                date = it["date"]?.toString() ?: "N/A"
-                prix = it["prix"]?.toString() ?: "N/A"
-                title = it["titre"]?.toString() ?: "N/A"
-            }
-        }
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFD9D9D9))
-            .clickable{
-                onAnnonceClick(title)
-            }
-    ) {
-        Row(modifier = Modifier.padding(8.dp)) {
-            Image(
-                painter = painterResource(id = R.drawable.appartement1),
-                contentDescription = "Image par défaut",
-                modifier = Modifier
-                    .height(120.dp)
-                    .padding(end = 8.dp)
-            )
-            Column {
-                //Text("$description", color = Color.Black, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    text = "$description",
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.Black,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text("$localisation", color = Color.Black, style = MaterialTheme.typography.bodyLarge)
-                Text("$prix", color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
-                Text("$date", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}*/
-
-
-/*
-@Composable
-fun AnnonceCard(annonce: com.example.propfinder.data.models.Annonce) {
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    val formattedDate = dateFormat.format(Date(annonce.date))
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFD9D9D9)
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
+            .padding(8.dp)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFD9D9D9))
     ) {
-        Column {
-            // Image de l'annonce
-            if (annonce.images.isNotEmpty()) {
-                AsyncImage(
-                    model = annonce.images.first(),
-                    contentDescription = "Image de l'annonce",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    contentScale = ContentScale.Crop,
-                    error = painterResource(id = R.drawable.appartement1),
-                    placeholder = painterResource(id = R.drawable.appartement1)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .background(Color.Gray)
-                ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+
+            // Partie haute : image + infos
+            Row(modifier = Modifier.fillMaxWidth()) {
+
+                // Image
+                Box {
                     Image(
                         painter = painterResource(id = R.drawable.appartement1),
-                        contentDescription = "Image par défaut",
-                        modifier = Modifier.fillMaxSize(),
+                        contentDescription = "Image",
+                        modifier = Modifier
+                            .size(160.dp)
+                            .clip(RoundedCornerShape(10.dp)),
                         contentScale = ContentScale.Crop
+                    )
+
+                    // Badge dispo
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .background(
+                                color = when (type) {
+                                    "à louer" -> Color(0xFF2196F3)  // Bleu
+                                    "à vendre" -> Color(0xFFF44336) // Rouge
+                                    else -> Color.Gray
+                                },
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = when (type) {
+                                "à louer" -> "À louer"
+                                "à vendre" -> "À vendre"
+                                else -> "Annonce"
+                            },
+                            color = Color.White,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Texte
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically)
+                ) {
+                    Text(
+                        text = title,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = localisation,
+                        color = Color.DarkGray,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            // Informations de l'annonce
-            Column(
-                modifier = Modifier.padding(16.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+            Divider()
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Bas : prix + date avec icônes
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = annonce.titre,
-                    color = Color.Black,
-                    style = MaterialTheme.typography.titleLarge,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = annonce.localisation,
-                        color = Color.Black,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "${annonce.prix.toInt()}€",
-                        color = Color(0xFFF07B42),
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AttachMoney, contentDescription = null, tint = Color(0xFFF07B42))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = prix, color = Color(0xFFF07B42), style = MaterialTheme.typography.titleMedium)
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = annonce.description,
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = annonce.type,
-                        color = Color(0xFF1E1E1E),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                        text = "Publié le $formattedDate",
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Color.Gray)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = date, color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
     }
 }
-
- */
