@@ -62,8 +62,16 @@ class MessageViewModel : ViewModel() {
     }
 
     fun insertMessage(message: Message) {
-        messageCollection.add(message)
+        messageCollection
+            .add(message)
+            .addOnSuccessListener {
+                FirebaseFirestore.getInstance()
+                    .collection("Discussion")
+                    .document(message.idDiscussion)
+                    .update("date", message.dateEnvoie)
+            }
     }
+
 
     override fun onCleared() {
         super.onCleared()

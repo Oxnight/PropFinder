@@ -56,38 +56,43 @@ class DiscussionViewModel : ViewModel() {
                 }
 
             // Écoute temps réel des nouvelles discussions
-            listenerRegistration = discussionCollection
-                .addSnapshotListener { snapshots, error ->
-                    if (error != null || snapshots == null) {
-                        return@addSnapshotListener
-                    }
+            listenerRegistration = discussionCollection.addSnapshotListener { snapshots, error ->
+                if (error != null || snapshots == null) return@addSnapshotListener
 
-                    for (change in snapshots.documentChanges) {
-                        if (change.type == DocumentChange.Type.ADDED) {
-                            val doc = change.document
-                            val idUserSend = doc.getString("idUserSend") ?: continue
-                            val idAnnonce = doc.getString("idAnnonce") ?: continue
+                for (change in snapshots.documentChanges) {
+                    val doc = change.document
+                    val idUserSend = doc.getString("idUserSend") ?: continue
+                    val idAnnonce = doc.getString("idAnnonce") ?: continue
+                    val isSender   = idUserSend == userId
+                    val isReceiver = idAnnonce in userAnnonceList
+                    if (!isSender && !isReceiver) continue   // on ignore les discussions qui ne nous concernent pas
 
-                            val isSender = idUserSend == userId
-                            val isReceiver = idAnnonce in userAnnonceList
+                    val updatedDiscussion = Discussion(
+                        id          = doc.id,
+                        idUserSend  = idUserSend,
+                        idAnnonce   = idAnnonce,
+                        date        = doc.getTimestamp("date") ?: Timestamp.now()
+                    )
 
-                            if (isSender || isReceiver) {
-                                val newDiscussion = Discussion(
-                                    id = doc.id,
-                                    idUserSend = idUserSend,
-                                    idAnnonce = idAnnonce,
-                                    date = doc.getTimestamp("date") ?: Timestamp.now(),
-                                )
-
-                                val alreadyExists = discussions.any { it.id == newDiscussion.id }
-                                if (!alreadyExists) {
-                                    discussions.add(newDiscussion)
-                                    discussions.sortByDescending { it.date }
-                                }
+                    when (change.type) {
+                        DocumentChange.Type.ADDED -> {
+                            if (discussions.none { it.id == updatedDiscussion.id }) {
+                                discussions.add(updatedDiscussion)
                             }
                         }
+                        DocumentChange.Type.MODIFIED -> {
+                            val index = discussions.indexOfFirst { it.id == updatedDiscussion.id }
+                            if (index != -1) {
+                                discussions[index] = updatedDiscussion    // on remplace l’ancienne version
+                            }
+                        }
+                        else -> {}
                     }
                 }
+                // un seul tri à faire à la fin du batch
+                discussions.sortByDescending { it.date }
+            }
+
         }
     }
 
