@@ -8,11 +8,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
@@ -36,22 +37,15 @@ import java.util.*
 
 @Composable
 fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController : NavController) {
-
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFD9D9D9)),
-
     ) {
-        Column(
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+        Column(modifier = Modifier.padding(top = 16.dp)) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "  Publier une annonce",
                     modifier = Modifier.align(Alignment.Center),
@@ -101,7 +95,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
         imageUris = uris
     }
 
-    var prix by remember { mutableStateOf(50f) }
+    var prix by remember { mutableStateOf("") }
 
     LaunchedEffect(localisation) {
         if (localisation.isNotBlank()) {
@@ -128,7 +122,6 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
         }
     }
 
-
     CompositionLocalProvider(
         LocalOverscrollConfiguration provides null
     ) {
@@ -145,7 +138,6 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -157,13 +149,9 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                             ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(
-                            selected = selectedOption == "à vendre",
-                            onClick = null
-                        )
+                        RadioButton(selected = selectedOption == "à vendre", onClick = null)
                         Text("à vendre", modifier = Modifier.padding(start = 8.dp))
                     }
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -175,10 +163,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                             ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(
-                            selected = selectedOption == "à louer",
-                            onClick = null
-                        )
+                        RadioButton(selected = selectedOption == "à louer", onClick = null)
                         Text("à louer", modifier = Modifier.padding(start = 8.dp))
                     }
                 }
@@ -192,7 +177,6 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
-
                 )
             }
 
@@ -223,10 +207,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                             tint = Color(0xFFD9D9D9),
                         )
                     }
-                    Text(
-                        "   (${imageUris.size} images chargées)",
-                        fontWeight = FontWeight.Light
-                    )
+                    Text("   (${imageUris.size} images chargées)", fontWeight = FontWeight.Light)
                 }
             }
 
@@ -236,24 +217,23 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                     onValueChange = { description = it },
                     label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth(),
-
                 )
             }
 
             item {
-                Text("Prix: ${prix.toFloat()} €", fontWeight = FontWeight.Bold)
-                Slider(
+                OutlinedTextField(
                     value = prix,
-                    onValueChange = { prix = it },
-                    valueRange = 0f..1000f,
-                    steps = 9,
+                    onValueChange = {
+                        if (it.matches(Regex("^\\d*\\.?\\d*\$"))) {
+                            prix = it
+                        }
+                    },
+                    label = { Text("Prix (€)") },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFF1E1E1E),
-                        activeTrackColor = Color(0xFFF07B42),
-                        inactiveTrackColor = Color.LightGray
-                    ),
-
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    )
                 )
             }
 
@@ -263,7 +243,6 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                     onValueChange = { caracteristiques = it },
                     label = { Text("Caractéristiques") },
                     modifier = Modifier.fillMaxWidth(),
-
                 )
             }
 
@@ -275,12 +254,16 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                coordonnees?.let { coords ->
-                    Text(
-                        text = "Coordonnées : $coords",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.DarkGray
-                    )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                coordonnees.let { coords ->
+                    if (coords.isNotBlank()) {
+                        Text(
+                            text = "Coordonnées : $coords",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.DarkGray
+                        )
+                    }
                 }
 
                 geocodingError?.let { error ->
@@ -295,11 +278,12 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
             item {
                 Button(
                     onClick = {
+                        val prixFloat = prix.toFloatOrNull() ?: 0f
                         val isFormValid = titre.isNotBlank()
                                 && description.isNotBlank()
                                 && caracteristiques.isNotBlank()
                                 && localisation.isNotBlank()
-                                && prix > 0f
+                                && prixFloat > 0f
                                 && selectedOption.isNotBlank()
 
                         if (isFormValid) {
@@ -309,7 +293,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                                 caracteristiques = caracteristiques,
                                 localisation = localisation,
                                 coordonnees = coordonnees,
-                                prix = prix,
+                                prix = prixFloat,
                                 type = selectedOption,
                                 idUser = authViewModel.getUserId() ?: "",
                                 imageUri = if (imageUris.isNotEmpty()) imageUris[0] else null
@@ -320,14 +304,12 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                         } else {
                             Toast.makeText(context, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
                         }
-
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFF07B42),
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(12.dp),
-
                 ) {
                     Text(text = "Envoyer")
                 }
