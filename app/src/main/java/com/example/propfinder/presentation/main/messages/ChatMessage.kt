@@ -5,19 +5,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -51,17 +63,14 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
     val discussionViewModel: DiscussionViewModel = viewModel()
     val annonceViewModel: AnnonceViewModel = viewModel()
     val messageViewModel: MessageViewModel = viewModel()
-
-
+    val profileViewModel: ProfileViewModel = viewModel()
+    val utilisateur = profileViewModel.utilisateur
+    val destinataireName = remember { mutableStateOf("...") }
 
     val userId = authViewModel.getUserId()
     val userEnFace = remember { mutableStateOf("") }
     val input = remember { mutableStateOf("") }
     val discussionIdState = remember { mutableStateOf(idDiscussion) }
-
-
-
-
 
     LaunchedEffect(idAnnonce) {
         // Si on arrive depuis l’annonce :
@@ -89,8 +98,6 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
         }
     }
 
-
-
     LaunchedEffect(discussionIdState.value) {
         val id = discussionIdState.value
         if (id != null) {
@@ -98,37 +105,82 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
         }
     }
 
+    LaunchedEffect(discussionIdState.value) {
+        val id = discussionIdState.value
+        if (id != null) {
+            messageViewModel.loadMessagesForDiscussion(id)
 
+            discussionViewModel.getDiscussionById(id) { discussion ->
+                discussion?.let {
+                    val myId = authViewModel.getUserId()
+                    val idDestinataire = if (it.idUserSend == myId) {
+                        // C'est toi qui a envoyé, donc l'autre est le propriétaire
+                        annonceViewModel.getUserIdById(it.idAnnonce) { ownerId ->
+                            if (ownerId != null) {
+                                authViewModel.getUserNameById(ownerId) { name ->
+                                    destinataireName.value = name ?: "Destinataire inconnu"
+                                }
+                            }
+                        }
+                    } else {
+                        // Tu es le propriétaire, donc l'autre est l’envoyeur
+                        authViewModel.getUserNameById(it.idUserSend) { name ->
+                            destinataireName.value = name ?: "Destinataire inconnu"
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E))
-            .padding(16.dp),
+            .background(Color(0xFF1E1E1E)),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Barre de haut avec bouton retour
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(Color(0xFFD9D9D9))
+                .statusBarsPadding() // ✅ bien mieux que WindowInsets
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+            // Bouton retour à gauche
             Button(
                 onClick = { navController.popBackStack() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
+                shape = RoundedCornerShape(10.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .height(42.dp) // facultatif si tu veux une taille précise
             ) {
-                Text(" Retour", color = Color.White)
+                Text(
+                    text = "Retour",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Discussion",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
 
-
+            // Nom centré
+            if (utilisateur != null) {
+                Text(
+                    text = destinataireName.value,
+                    color = Color.Black,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                CircularProgressIndicator(
+                    color = Color.Gray,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .align(Alignment.Center)
+                )
+            }
         }
 
         LazyColumn(
@@ -137,6 +189,9 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 .padding(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
             items(messageViewModel.messages) { message ->
                 val isMe = message.senderId == userId
                 val backgroundColor = if (isMe) Color(0xFFF07B42) else Color(0xFF2E2E2E)
@@ -144,7 +199,9 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 val alignment = if (isMe) Alignment.End else Alignment.Start
 
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
                     horizontalAlignment = alignment
                 ) {
                     Box(
@@ -162,14 +219,19 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp, start = 12.dp, end = 12.dp), // ← remonte l’ensemble
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
                 value = input.value,
-                onValueChange = {input.value = it},
+                onValueChange = { input.value = it },
                 placeholder = { Text("Écrire...", color = Color.Gray) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 48.dp), // facultatif pour une bonne hauteur
+                shape = RoundedCornerShape(16.dp), // ← coins arrondis
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -216,9 +278,12 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 ,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42))
             ) {
-                Text("→", color = Color.Black)
+                Icon(
+                    imageVector = Icons.Filled.Send,
+                    contentDescription = "Envoyer",
+                    tint = Color.Black
+                )
             }
         }
     }
-
 }

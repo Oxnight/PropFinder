@@ -69,6 +69,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.LocalOverscrollConfiguration
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.IconButton
 
 @Composable
 fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController, titre: String) {
@@ -87,6 +89,24 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
+                IconButton(
+                    onClick = {
+                        val popped = navController.popBackStack()
+                        if (!popped) navController.navigate("main")
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 20.dp)
+                        .size(40.dp)
+                        .background(Color(0xFFF07B42), shape = RoundedCornerShape(12.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Retour",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
                 Text(
                     text = titre,
                     modifier = Modifier.align(Alignment.Center),
@@ -96,8 +116,8 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                     painter = painterResource(id = R.drawable.building),
                     contentDescription = "Home",
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 16.dp)
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 16.dp)
                         .size(42.dp)
                 )
 
@@ -210,7 +230,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                 )
                                 Spacer(modifier = Modifier.width(1.dp))
                                 Text(
-                                    text = "  ${annonce?.prix} €",
+                                    text = "${annonce?.prix} €",
                                     color = Color(0xFFF07B42),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 22.sp,
