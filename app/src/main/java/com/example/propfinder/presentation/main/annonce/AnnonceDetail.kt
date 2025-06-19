@@ -1,6 +1,7 @@
 package com.example.propfinder.presentation.main.annonce
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -66,6 +68,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.LocalOverscrollConfiguration
 
 @Composable
 fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController, titre: String) {
@@ -116,7 +119,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
         }
     }
 }
-
+@OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
     @Composable
     fun AnnonceDetailContent(
         annonceViewModel: AnnonceViewModel,
@@ -137,6 +140,9 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             }
         }
 
+    CompositionLocalProvider(
+            LocalOverscrollConfiguration provides null
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -144,8 +150,9 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
         ) {
             if (annonce != null) {
                 Column(
-                    modifier = Modifier.fillMaxWidth()
-                        .wrapContentHeight()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                 ) {
                     if (annonce?.images?.isNotEmpty() == true) {
                         Text("Images :", style = MaterialTheme.typography.bodyMedium)
@@ -387,3 +394,4 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             }
         }
     }
+        }
