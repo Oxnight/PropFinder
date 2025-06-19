@@ -1,5 +1,6 @@
 package com.example.propfinder
 
+
 import ProfilePage
 import android.os.Bundle
 import android.util.Log
@@ -16,9 +17,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.propfinder.presentation.auth.LoginPage
 import com.example.propfinder.presentation.auth.RegisterPage
 import com.example.propfinder.presentation.main.Template
+import com.example.propfinder.presentation.main.annonce.EditAnnonceScreen
+//import com.example.propfinder.presentation.main.annonce.EditAnnonce
 import com.example.propfinder.presentation.main.messages.ChatPage
 import com.example.propfinder.presentation.main.messages.DiscussionsPage
 import com.example.propfinder.presentation.main.profile.ModifierProfilePage
+import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
 import com.example.propfinder.presentation.viewmodels.MessageViewModel
 import com.example.propfinder.ui.theme.PropFinderTheme
@@ -50,7 +54,7 @@ fun PropFinderApp() {
     val authViewModel: AuthViewModel = viewModel()
     val isLoggedIn = authViewModel.isUserLoggedIn()
     val startDestination = if (isLoggedIn) "main" else "login"
-
+    val annonceViewModel : AnnonceViewModel = viewModel()
 
 
     NavHost(
@@ -85,6 +89,16 @@ fun PropFinderApp() {
             val idAnnonce = backStackEntry.arguments?.getString("idAnnonce")
             ChatPage(navController, idAnnonce = idAnnonce)
         }
+        composable("edit_annonce/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+
+            EditAnnonceScreen(
+                annonceId = id,
+                navController = navController,
+                annonceViewModel = annonceViewModel
+            )
+        }
+
 
 
 

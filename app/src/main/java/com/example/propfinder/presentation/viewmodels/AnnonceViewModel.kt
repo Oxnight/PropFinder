@@ -164,4 +164,24 @@ class AnnonceViewModel : ViewModel() {
                 onResult(emptyList())
             }
     }
+
+    fun updateAnnonce(idAnnonce: String, updatedFields: Map<String, Any>, onResult: (Boolean) -> Unit) {
+        annonceCollection.document(idAnnonce).update(updatedFields)
+            .addOnSuccessListener {
+                println("Annonce mise à jour avec succès.")
+                onResult(true)
+            }
+            .addOnFailureListener { e ->
+                println("Erreur lors de la mise à jour : ${e.message}")
+                onResult(false)
+            }
+    }
+
+    fun deleteAnnonce(idAnnonce: String, onResult: (Boolean) -> Unit) {
+        FirebaseFirestore.getInstance().collection("Annonce")
+            .document(idAnnonce)
+            .delete()
+            .addOnSuccessListener { onResult(true) }
+            .addOnFailureListener { onResult(false) }
+    }
 }
