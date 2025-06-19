@@ -161,7 +161,7 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
             val titre = annonce.titre?.toString() ?: ""
             val description = annonce.description?.toString() ?: ""
             val localisation = annonce.localisation?.toString() ?: ""
-            val prix = annonce.prix?.toString() ?: ""
+            val prix = annonce.prix?.let { formatPrice(it) } ?: ""
             val dateLisible = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(annonce.date))
 
             AnnonceItem(
@@ -282,4 +282,8 @@ fun AnnonceItem(
             }
         }
     }
+}
+
+fun formatPrice(value: Number): String {
+    return "%,.2f".format(value.toDouble()).replace(',', ' ')
 }
