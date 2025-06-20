@@ -57,7 +57,7 @@ fun ModifierProfilePage(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(10.dp)) // padding haut
+            Spacer(modifier = Modifier.height(30.dp)) // padding haut
 
             Text(
                 text = "Modifier votre profil",
@@ -102,7 +102,7 @@ fun ModifierProfilePage(
                     }
                 }
                 ,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF444444)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
