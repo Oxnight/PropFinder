@@ -155,7 +155,7 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(top = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(annonces) { annonce ->

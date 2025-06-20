@@ -1,7 +1,9 @@
 package com.example.propfinder.presentation.main.messages
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -128,6 +130,7 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController) {
     val discussionViewModel: DiscussionViewModel = viewModel()
@@ -167,18 +170,22 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
                 )
             }
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
+            CompositionLocalProvider(
+                LocalOverscrollConfiguration provides null
             ) {
-                items(discussionViewModel.discussions) { discussion ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(6.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        OneDiscussion(discussion, navController)
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(discussionViewModel.discussions) { discussion ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(6.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            OneDiscussion(discussion, navController)
+                        }
                     }
                 }
             }

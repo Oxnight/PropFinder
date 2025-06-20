@@ -69,5 +69,8 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
+    fun getUserProfile(): Utilisateur? {
+        return utilisateur
+    }
 
 }

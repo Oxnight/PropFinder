@@ -1,6 +1,8 @@
 package com.example.propfinder.presentation.main.messages
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +60,7 @@ import com.example.propfinder.presentation.viewmodels.ProfileViewModel
 import kotlin.math.log
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnonce : String? = null) {
 
@@ -185,107 +189,110 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
             }
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+        CompositionLocalProvider(
+            LocalOverscrollConfiguration provides null
         ) {
-            item {
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-            items(messageViewModel.messages) { message ->
-                val isMe = message.senderId == userId
-                val backgroundColor = if (isMe) Color(0xFFF07B42) else Color(0xFF2E2E2E)
-                val textColor = if (isMe) Color.Black else Color.White
-                val alignment = if (isMe) Alignment.End else Alignment.Start
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+                items(messageViewModel.messages) { message ->
+                    val isMe = message.senderId == userId
+                    val backgroundColor = if (isMe) Color(0xFFF07B42) else Color(0xFF2E2E2E)
+                    val textColor = if (isMe) Color.Black else Color.White
+                    val alignment = if (isMe) Alignment.End else Alignment.Start
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                    horizontalAlignment = alignment
-                ) {
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .background(backgroundColor, shape = RoundedCornerShape(12.dp))
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        horizontalAlignment = alignment
                     ) {
-                        Text(
-                            text = message.contenu,
-                            color = textColor
-                        )
+                        Box(
+                            modifier = Modifier
+                                .background(backgroundColor, shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = message.contenu,
+                                color = textColor
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 12.dp, end = 12.dp), // ← remonte l’ensemble
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = input.value,
-                onValueChange = { input.value = it },
-                placeholder = { Text("Écrire...", color = Color.Gray) },
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 48.dp)
-                    .testTag("message_input"),
-                shape = RoundedCornerShape(16.dp), // ← coins arrondis
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp, start = 12.dp, end = 12.dp), // ← remonte l’ensemble
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextField(
+                    value = input.value,
+                    onValueChange = { input.value = it },
+                    placeholder = { Text("Écrire...", color = Color.Gray) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 48.dp)
+                        .testTag("message_input"),
+                    shape = RoundedCornerShape(16.dp), // ← coins arrondis
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    val currentDiscussionId = discussionIdState.value
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        val currentDiscussionId = discussionIdState.value
 
-                    if (input.value.isNotBlank() && currentDiscussionId != null) {
-                        // discussion déjà prête → on insère juste le message
-                        val messageToInsert = Message(
-                            contenu = input.value,
-                            idDiscussion = currentDiscussionId,
-                            senderId = authViewModel.getUserId()
-                        )
-                        messageViewModel.insertMessage(messageToInsert)
-                        input.value = ""
-                    }
-                    else if (input.value.isNotBlank() && currentDiscussionId == null) {
-                        // il faut encore créer la discussion (cas théorique : la création a échoué
-                        // ou la LaunchedEffect n’a pas encore fini)
-                        if (idAnnonce != null && userId != null) {
-                            discussionViewModel.createDiscussion(
-                                idAnnonce = idAnnonce,
-                                idUserSend = userId
-                            ) { created ->
-                                created?.let {
-                                    discussionIdState.value = it.id   // met à jour l’état
-                                    val message = Message(
-                                        contenu = input.value,
-                                        idDiscussion = it.id,
-                                        senderId = authViewModel.getUserId()
-                                    )
-                                    messageViewModel.insertMessage(message)
-                                    input.value = ""
+                        if (input.value.isNotBlank() && currentDiscussionId != null) {
+                            // discussion déjà prête → on insère juste le message
+                            val messageToInsert = Message(
+                                contenu = input.value,
+                                idDiscussion = currentDiscussionId,
+                                senderId = authViewModel.getUserId()
+                            )
+                            messageViewModel.insertMessage(messageToInsert)
+                            input.value = ""
+                        } else if (input.value.isNotBlank() && currentDiscussionId == null) {
+                            // il faut encore créer la discussion (cas théorique : la création a échoué
+                            // ou la LaunchedEffect n’a pas encore fini)
+                            if (idAnnonce != null && userId != null) {
+                                discussionViewModel.createDiscussion(
+                                    idAnnonce = idAnnonce,
+                                    idUserSend = userId
+                                ) { created ->
+                                    created?.let {
+                                        discussionIdState.value = it.id   // met à jour l’état
+                                        val message = Message(
+                                            contenu = input.value,
+                                            idDiscussion = it.id,
+                                            senderId = authViewModel.getUserId()
+                                        )
+                                        messageViewModel.insertMessage(message)
+                                        input.value = ""
+                                    }
                                 }
                             }
                         }
-                    }
-                },
-                modifier = Modifier.testTag("send_button"),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42))
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Send,
-                    contentDescription = "Envoyer",
-                    tint = Color.Black
-                )
+                    },
+                    modifier = Modifier.testTag("send_button"),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42))
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Send,
+                        contentDescription = "Envoyer",
+                        tint = Color.Black
+                    )
+                }
             }
         }
     }

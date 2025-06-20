@@ -2,57 +2,61 @@ package com.example.propfinder.presentation.main
 
 import ProfilePage
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import com.example.propfinder.R
-import com.example.propfinder.presentation.home.Recherche
-import com.example.propfinder.presentation.main.publish.Publish
-import com.example.propfinder.presentation.main.map.OsmdroidMapView
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.propfinder.R
+import com.example.propfinder.presentation.home.Recherche
 import com.example.propfinder.presentation.main.annonce.AnnonceDetail
+import com.example.propfinder.presentation.main.map.OsmdroidMapView
 import com.example.propfinder.presentation.main.messages.DiscussionsPage
-import com.example.propfinder.presentation.viewmodels.AuthViewModel
+import com.example.propfinder.presentation.main.publish.Publish
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
+import com.example.propfinder.presentation.viewmodels.AuthViewModel
+import androidx.compose.ui.platform.testTag
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Template(authViewModel: AuthViewModel, navController: NavController) {
-    var selectedIndex by remember { mutableStateOf(0) }
-    val annonceViewModel: AnnonceViewModel = viewModel()
-    var selectedAnnonce by remember { mutableStateOf<String?>(null) }
+fun Template(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    annonceViewModel: AnnonceViewModel
+) {
+    val internalNavController = rememberNavController()
+    val currentEntry by internalNavController.currentBackStackEntryAsState()
+    val currentDestination = currentEntry?.destination?.route
+    var selectedTitre by remember { mutableStateOf<String?>(null) }
+
+    val destinations = listOf(
+        "search" to Icons.Filled.Search,
+        "map" to Icons.Filled.LocationOn,
+        "publish" to Icons.Filled.Home,
+        "messages" to Icons.Filled.Email,
+        "profile" to Icons.Filled.Person
+    )
+
+    val testTags = listOf(
+        "home_button",
+        null, // pas de test tag pour "map"
+        "publish_button",
+        "discussion_button",
+        "profile_button"
+    )
 
     Scaffold(
         topBar = {
@@ -71,7 +75,9 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Notifications */ }) {
+                    IconButton(onClick = {
+                        internalNavController.navigate("messages")
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notifications",
@@ -86,67 +92,80 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = Color(0xFFD9D9D9),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1E1E1E))
-            ) {
-                listOf(
-                    Icons.Filled.Search to "Search",
-                    Icons.Filled.LocationOn to "Map",
-                    Icons.Filled.Home to "Publish",
-                    Icons.Filled.Email to "Messages",
-                    Icons.Filled.Person to "Profil"
-                ).forEachIndexed { idx, pair ->
+            NavigationBar(containerColor = Color(0xFFD9D9D9)) {
+                destinations.forEachIndexed { idx, (route, icon) ->
                     NavigationBarItem(
-                        modifier = when (idx) {
-                            0 -> Modifier.testTag("home_button")
-                            2 -> Modifier.testTag("publish_button")
-                            3 -> Modifier.testTag("discussion_button")
-                            4 -> Modifier.testTag("profile_button")
-                            else -> Modifier
-                        },
+                        modifier = testTags[idx]?.let { Modifier.testTag(it) } ?: Modifier,
                         icon = {
-                            Icon(
-                                pair.first,
-                                contentDescription = pair.second,
-                                modifier = Modifier.size(32.dp)
-                            )
+                            Icon(icon, contentDescription = route, modifier = Modifier.size(32.dp))
                         },
-                        label = { Text(pair.second) },
-                        selected = selectedIndex == idx,
+                        label = { Text(route) },
+                        selected = currentDestination == route,
                         onClick = {
-                            selectedIndex = idx
-                            selectedAnnonce = null
+                            if (currentDestination != route) {
+                                internalNavController.navigate(route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                            selectedTitre = null
                         }
                     )
                 }
             }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(Color(0xFF1E1E1E))
-        ) {
-            when (selectedIndex) {
-                0 -> Recherche(annonceViewModel = annonceViewModel, onAnnonceClick = { titre -> selectedAnnonce = titre })
-                1 -> OsmdroidMapView(annonceViewModel = annonceViewModel, navController = navController, onAnnonceClick = { titre -> selectedAnnonce = titre })
-                2 -> Publish(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController)
-                3 -> DiscussionsPage(modifier = Modifier, navController = navController)
-                4 -> ProfilePage(navController = navController)
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
+
+            NavHost(
+                navController = internalNavController,
+                startDestination = "search",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF1E1E1E))
+            ) {
+                composable("search") {
+                    Recherche(
+                        annonceViewModel = annonceViewModel,
+                        onAnnonceClick = { titre -> selectedTitre = titre }
+                    )
+                }
+                composable("map") {
+                    OsmdroidMapView(
+                        annonceViewModel = annonceViewModel,
+                        navController = navController,
+                        onAnnonceClick = { titre -> selectedTitre = titre }
+                    )
+                }
+                composable("publish") {
+                    Publish(
+                        annonceViewModel = annonceViewModel,
+                        authViewModel = authViewModel,
+                        navController = navController
+                    )
+                }
+                composable("messages") {
+                    DiscussionsPage(navController = navController)
+                }
+                composable("profile") {
+                    ProfilePage(navController = navController)
+                }
             }
 
-            if (selectedAnnonce != null) {
+            if (selectedTitre != null) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0x99000000))
-                        .pointerInput(Unit) {}
+                        .background(Color.Black.copy(alpha = 0.5f))
                 ) {
-                    AnnonceDetail(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController, titre = selectedAnnonce!!)
+                    AnnonceDetail(
+                        annonceViewModel = annonceViewModel,
+                        authViewModel = authViewModel,
+                        navController = navController,
+                        titre = selectedTitre!!,
+                        onClose = { selectedTitre = null }
+                    )
                 }
             }
         }

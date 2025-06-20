@@ -74,7 +74,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.testTag
 
 @Composable
-fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController, titre: String) {
+fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController, titre: String, onClose: () -> Unit) {
     val currentUserId = authViewModel.getUserId()
 
     Column(
@@ -92,7 +92,8 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             ) {
                 IconButton(
                     onClick = {
-                        val popped = navController.navigate("main")
+                        //val popped = navController.navigate("main")
+                        onClose()
                     },
                     modifier = Modifier
                         .align(Alignment.CenterStart)

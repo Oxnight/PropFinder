@@ -74,10 +74,11 @@ fun ModifierProfilePage(
                     .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(8.dp))
                     .padding(16.dp)
             ) {
-                EditableField("Prénom",prenom)
-                EditableField("Nom",nom)
-                EditableField("Âge",age)
-                EditableField("Email",email)
+                val utilisateur = profilviewModel.getUserProfile()
+                EditableField("Prénom",prenom.apply { value = utilisateur?.prenom ?: "" })
+                EditableField("Nom",nom.apply { value = utilisateur?.nom ?: "" })
+                EditableField("Âge",age.apply { value = utilisateur?.age ?: "" })
+                EditableField("Email",email.apply { value = utilisateur?.mail ?: "" })
             }
 
             Spacer(modifier = Modifier.height(30.dp))
