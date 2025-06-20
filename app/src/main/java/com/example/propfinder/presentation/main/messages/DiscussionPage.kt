@@ -50,6 +50,28 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
 
     val currentUserId = authViewModel.getUserId()
 
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Supprimer la discussion") },
+            text = { Text("Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible.") },            confirmButton = {
+                TextButton(onClick = {
+                    discussionViewModel.deleteDiscussion(discussion.id)
+                    showDialog = false
+                }) {
+                    Text("Supprimer", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
+
     LaunchedEffect(discussion.idAnnonce) {
         annonceViewModel.getAnnonceTitleById(discussion.idAnnonce) { titre ->
             titreAnnonceState.value = titre ?: "Titre inconnu"
@@ -117,9 +139,7 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
             )
         }
 
-        IconButton(onClick = {
-            discussionViewModel.deleteDiscussion(discussion.id)
-        }) {
+        IconButton(onClick = { showDialog = true }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_delete),
                 contentDescription = "Supprimer",
