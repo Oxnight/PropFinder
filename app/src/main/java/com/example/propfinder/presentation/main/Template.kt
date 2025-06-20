@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -99,7 +100,20 @@ fun Template(authViewModel: AuthViewModel, navController: NavController) {
                     Icons.Filled.Person to "Profil"
                 ).forEachIndexed { idx, pair ->
                     NavigationBarItem(
-                        icon = { Icon(pair.first, contentDescription = pair.second, modifier = Modifier.size(32.dp)) },
+                        modifier = when (idx) {
+                            0 -> Modifier.testTag("home_button")
+                            2 -> Modifier.testTag("publish_button")
+                            3 -> Modifier.testTag("discussion_button")
+                            4 -> Modifier.testTag("profile_button")
+                            else -> Modifier
+                        },
+                        icon = {
+                            Icon(
+                                pair.first,
+                                contentDescription = pair.second,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        },
                         label = { Text(pair.second) },
                         selected = selectedIndex == idx,
                         onClick = {

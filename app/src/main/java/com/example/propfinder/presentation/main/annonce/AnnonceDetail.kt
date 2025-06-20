@@ -71,6 +71,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.testTag
 
 @Composable
 fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController, titre: String) {
@@ -91,8 +92,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             ) {
                 IconButton(
                     onClick = {
-                        val popped = navController.popBackStack()
-                        if (!popped) navController.navigate("main")
+                        val popped = navController.navigate("main")
                     },
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -321,7 +321,9 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                     navController.navigate("message_route/${annonce?.id}")
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
-                                modifier = Modifier.padding(end = 16.dp)
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .testTag("contact_button")
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Send,

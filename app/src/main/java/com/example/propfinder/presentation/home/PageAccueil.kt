@@ -45,6 +45,7 @@ import java.util.*
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.sp
 import com.example.propfinder.data.models.Annonce
 
@@ -189,6 +190,7 @@ fun AnnonceItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .testTag("annonce_card")
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color(0xFFD9D9D9))
     ) {

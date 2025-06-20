@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
@@ -129,7 +130,9 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Button(
                 onClick = { navController.navigate("register") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("signup_button"),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
             ) {
                 Text("Créer un compte", color = Color(0xFF1E1E1E))
@@ -193,7 +196,9 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 label = { Text("Email") },
                 placeholder = { Text("votre.email@example.com") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("email_field"),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
             )
 
@@ -205,7 +210,9 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 label = { Text("Nom") },
                 placeholder = { Text("Dupont") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("nom_field"),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
             )
 
@@ -217,7 +224,9 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 label = { Text("Prénom") },
                 placeholder = { Text("Jean") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("prenom_field"),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
             )
 
@@ -229,7 +238,9 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 label = { Text("Age") },
                 placeholder = { Text("50") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("age_field"),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
             )
 
@@ -244,7 +255,9 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 textStyle = LocalTextStyle.current.copy(color = Color.White),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("password_field"),
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -277,7 +290,8 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(20.dp)
+                    .testTag("create_account_button"),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
             ) {
                 Text("Créer votre compte", color = Color(0xFF1E1E1E))

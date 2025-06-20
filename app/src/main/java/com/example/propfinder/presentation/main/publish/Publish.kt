@@ -9,10 +9,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -79,23 +81,18 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
     val context = LocalContext.current
 
     var selectedOption by remember { mutableStateOf("") }
-
     var titre by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var caracteristiques by remember { mutableStateOf("") }
     var localisation by remember { mutableStateOf("") }
-
     var coordonnees by remember { mutableStateOf("") }
     var geocodingError by remember { mutableStateOf<String?>(null) }
-
     var imageUris by remember { mutableStateOf(listOf<Uri>()) }
+    var prix by remember { mutableStateOf("") }
+
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris: List<Uri> ->
-        imageUris = uris
-    }
-
-    var prix by remember { mutableStateOf("") }
+    ) { uris: List<Uri> -> imageUris = uris }
 
     LaunchedEffect(localisation) {
         if (localisation.isNotBlank()) {
@@ -122,197 +119,131 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
         }
     }
 
-    CompositionLocalProvider(
-        LocalOverscrollConfiguration provides null
-    ) {
-        LazyColumn(
+    CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
+        Column(
             modifier = Modifier
                 .padding(24.dp)
+                .verticalScroll(rememberScrollState())
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
-                Column {
-                    Text(
-                        text = "Vous avez un bien :",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .selectable(
-                                selected = selectedOption == "à vendre",
-                                onClick = { selectedOption = "à vendre" },
-                                role = Role.RadioButton
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(selected = selectedOption == "à vendre", onClick = null)
-                        Text("à vendre", modifier = Modifier.padding(start = 8.dp))
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .selectable(
-                                selected = selectedOption == "à louer",
-                                onClick = { selectedOption = "à louer" },
-                                role = Role.RadioButton
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(selected = selectedOption == "à louer", onClick = null)
-                        Text("à louer", modifier = Modifier.padding(start = 8.dp))
-                    }
-                }
-            }
-
-            item {
-                OutlinedTextField(
-                    value = titre,
-                    onValueChange = { titre = it },
-                    label = { Text("Titre") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                )
-            }
-
-            item {
-                Text(
-                    text = "Ajouter des images :",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF07B42)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Ajouter des images",
-                            tint = Color(0xFFD9D9D9),
-                        )
-                    }
-                    Text("   (${imageUris.size} images chargées)", fontWeight = FontWeight.Light)
-                }
-            }
-
-            item {
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = prix,
-                    onValueChange = {
-                        if (it.matches(Regex("^\\d*\\.?\\d*\$"))) {
-                            prix = it
-                        }
-                    },
-                    label = { Text("Prix (€)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number
-                    )
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = caracteristiques,
-                    onValueChange = { caracteristiques = it },
-                    label = { Text("Caractéristiques") },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = localisation,
-                    onValueChange = { localisation = it },
-                    label = { Text("Adresse") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                coordonnees.let { coords ->
-                    if (coords.isNotBlank()) {
-                        Text(
-                            text = "Coordonnées : $coords",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.DarkGray
-                        )
-                    }
-                }
-
-                geocodingError?.let { error ->
-                    Text(
-                        text = error,
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-
-            item {
-                Button(
-                    onClick = {
-                        val prixFloat = prix.toFloatOrNull() ?: 0f
-                        val isFormValid = titre.isNotBlank()
-                                && description.isNotBlank()
-                                && caracteristiques.isNotBlank()
-                                && localisation.isNotBlank()
-                                && prixFloat > 0f
-                                && selectedOption.isNotBlank()
-
-                        if (isFormValid) {
-                            annonceViewModel.publishAnnonce(
-                                titre = titre,
-                                description = description,
-                                caracteristiques = caracteristiques,
-                                localisation = localisation,
-                                coordonnees = coordonnees,
-                                prix = prixFloat,
-                                type = selectedOption,
-                                idUser = authViewModel.getUserId() ?: "",
-                                imageUri = if (imageUris.isNotEmpty()) imageUris[0] else null
-                            ) {
-                                Toast.makeText(context, "Annonce publiée avec succès", Toast.LENGTH_SHORT).show()
-                                navController.navigate("main")
-                            }
-                        } else {
-                            Toast.makeText(context, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF07B42),
-                        contentColor = Color.White
+            Text("Vous avez un bien :", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp, bottom = 2.dp)
+                    .selectable(
+                        selected = selectedOption == "à vendre",
+                        onClick = { selectedOption = "à vendre" },
+                        role = Role.RadioButton
                     ),
-                    shape = RoundedCornerShape(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(selected = selectedOption == "à vendre", onClick = null)
+                Text("à vendre", modifier = Modifier.padding(start = 8.dp))
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp, bottom = 4.dp)
+                    .testTag("radio_louer")
+                    .selectable(
+                        selected = selectedOption == "à louer",
+                        onClick = { selectedOption = "à louer" },
+                        role = Role.RadioButton
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(selected = selectedOption == "à louer", onClick = null)
+                Text("à louer", modifier = Modifier.padding(start = 8.dp))
+            }
+            OutlinedTextField(
+                value = titre,
+                onValueChange = { titre = it },
+                label = { Text("Titre") },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("titre_field")
+            )
+            Text("Ajouter des images :", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFF07B42)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Envoyer")
+                    Icon(Icons.Default.Add, contentDescription = "Ajouter des images", tint = Color(0xFFD9D9D9))
                 }
+                Text("   (${imageUris.size} images chargées)", fontWeight = FontWeight.Light)
+            }
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+                modifier = Modifier.fillMaxWidth().testTag("description_field")
+            )
+            OutlinedTextField(
+                value = prix,
+                onValueChange = {
+                    if (it.matches(Regex("^\\d*\\.?\\d*\$"))) {
+                        prix = it
+                    }
+                },
+                label = { Text("Prix (€)") },
+                modifier = Modifier.fillMaxWidth().testTag("prix_field"),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+            )
+            OutlinedTextField(
+                value = caracteristiques,
+                onValueChange = { caracteristiques = it },
+                label = { Text("Caractéristiques") },
+                modifier = Modifier.fillMaxWidth().testTag("carateristiques_field")
+            )
+            OutlinedTextField(
+                value = localisation,
+                onValueChange = { localisation = it },
+                label = { Text("Adresse") },
+                modifier = Modifier.fillMaxWidth().testTag("adress_field")
+            )
+            coordonnees.let { coords ->
+                if (coords.isNotBlank()) {
+                    Text("Coordonnées : $coords", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
+                }
+            }
+            geocodingError?.let { error ->
+                Text(error, color = Color.Red, style = MaterialTheme.typography.bodySmall)
+            }
+            Button(
+                onClick = {
+                    val prixFloat = prix.toFloatOrNull() ?: 0f
+                    val isFormValid = titre.isNotBlank() && description.isNotBlank() && caracteristiques.isNotBlank() && localisation.isNotBlank() && prixFloat > 0f && selectedOption.isNotBlank()
+                    if (isFormValid) {
+                        annonceViewModel.publishAnnonce(
+                            titre = titre,
+                            description = description,
+                            caracteristiques = caracteristiques,
+                            localisation = localisation,
+                            coordonnees = coordonnees,
+                            prix = prixFloat,
+                            type = selectedOption,
+                            idUser = authViewModel.getUserId() ?: "",
+                            imageUri = if (imageUris.isNotEmpty()) imageUris[0] else null
+                        ) {
+                            Toast.makeText(context, "Annonce publiée avec succès", Toast.LENGTH_SHORT).show()
+                            navController.navigate("main")
+                        }
+                    } else {
+                        Toast.makeText(context, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.testTag("submit_add_button"),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42), contentColor = Color.White),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(text = "Envoyer")
             }
         }
     }

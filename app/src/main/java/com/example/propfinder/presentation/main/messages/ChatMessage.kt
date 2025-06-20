@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.propfinder.data.models.Discussion
@@ -155,6 +156,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .height(42.dp) // facultatif si tu veux une taille précise
+                    .testTag("back_button")
             ) {
                 Text(
                     text = "Retour",
@@ -230,7 +232,8 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 placeholder = { Text("Écrire...", color = Color.Gray) },
                 modifier = Modifier
                     .weight(1f)
-                    .heightIn(min = 48.dp), // facultatif pour une bonne hauteur
+                    .heightIn(min = 48.dp)
+                    .testTag("message_input"),
                 shape = RoundedCornerShape(16.dp), // ← coins arrondis
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
@@ -274,8 +277,8 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                             }
                         }
                     }
-                }
-                ,
+                },
+                modifier = Modifier.testTag("send_button"),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42))
             ) {
                 Icon(
