@@ -41,7 +41,7 @@ class FullComposeFlowTest {
         composeTestRule.onNodeWithTag("password_field").performTextInput(testPassword)
         wait(1000)
         composeTestRule.onNodeWithTag("create_account_button").performClick()
-        wait(2000)
+        wait(3000)
 
         composeTestRule.onNodeWithTag("publish_button").performClick()
         wait(1000)
@@ -75,7 +75,7 @@ class FullComposeFlowTest {
             composeTestRule.onAllNodesWithTag("annonce_card", useUnmergedTree = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("annonce_card")[0].performClick()
+        composeTestRule.onAllNodesWithTag("annonce_card")[1].performClick()
         wait(2000)
 
         composeTestRule.waitUntil(5000) {
@@ -103,6 +103,33 @@ class FullComposeFlowTest {
             composeTestRule.onAllNodesWithTag("home_button", useUnmergedTree = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
-        wait(2000)
+        wait(1000)
+
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodesWithTag("annonce_card", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onAllNodesWithTag("annonce_card")[0].performClick()
+
+        composeTestRule.waitUntil(5000) {
+            composeTestRule.onAllNodesWithTag("delete_annonce", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag("delete_annonce").performClick()
+
+        composeTestRule.waitUntil(3000) {
+            composeTestRule.onAllNodesWithTag("confirm_delete_button", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag("confirm_delete_button").performClick()
+        wait(3000)
+
+        composeTestRule.waitUntil(3000) {
+            composeTestRule.onAllNodesWithTag("home_button", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag("home_button").performClick()
+
+        wait(3000)
     }
 }

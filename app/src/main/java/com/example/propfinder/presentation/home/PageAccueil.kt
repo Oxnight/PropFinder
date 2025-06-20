@@ -144,10 +144,12 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
                 else -> allAnnonces
             }
 
+            val sorted = filtered.sortedByDescending { it.date }
+
             annonces = if (search.isNotBlank()) {
-                filtered.filter { it.titre?.contains(search, ignoreCase = true) == true }
+                sorted.filter { it.titre?.contains(search, ignoreCase = true) == true }
             } else {
-                filtered
+                sorted
             }
         }
     }

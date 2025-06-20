@@ -270,6 +270,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                 modifier = Modifier
                                     .size(52.dp)
                                     .padding(end = 8.dp)
+                                    .testTag("delete_annonce")
                                     .clickable {
                                         showDialog = true
 
@@ -288,12 +289,13 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                                 annonceViewModel.deleteAnnonce(annonce!!.id!!) { success ->
                                                     if (success) {
                                                         Toast.makeText(context, "Annonce supprimée", Toast.LENGTH_SHORT).show()
-                                                        navController.popBackStack()
+                                                        navController.navigate("main")
                                                     } else {
                                                         Toast.makeText(context, "Erreur lors de la suppression", Toast.LENGTH_SHORT).show()
                                                     }
                                                 }
-                                            }
+                                            },
+                                            modifier = Modifier.testTag("confirm_delete_button")
                                         ) {
                                             Text("Oui", color = Color.Red)
                                         }

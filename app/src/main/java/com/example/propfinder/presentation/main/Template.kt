@@ -43,11 +43,11 @@ fun Template(
     var selectedTitre by remember { mutableStateOf<String?>(null) }
 
     val destinations = listOf(
-        "search" to Icons.Filled.Search,
-        "map" to Icons.Filled.LocationOn,
-        "publish" to Icons.Filled.Home,
-        "messages" to Icons.Filled.Email,
-        "profile" to Icons.Filled.Person
+        "Search" to Icons.Filled.Search,
+        "Map" to Icons.Filled.LocationOn,
+        "Publish" to Icons.Filled.Home,
+        "Messages" to Icons.Filled.Email,
+        "Profile" to Icons.Filled.Person
     )
 
     val testTags = listOf(

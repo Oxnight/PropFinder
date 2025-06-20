@@ -96,7 +96,7 @@ fun ProfilePage(
                         onClick = {
                             navController.navigate("modifier_profile_route")
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF444444)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(6.dp),
                         modifier = Modifier.height(36.dp)
@@ -135,7 +135,7 @@ fun ProfilePage(
                         popUpTo("profile_route") { inclusive = true }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF444444)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
