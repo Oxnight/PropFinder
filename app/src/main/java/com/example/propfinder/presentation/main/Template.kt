@@ -46,7 +46,7 @@ fun Template(
         "Search" to Icons.Filled.Search,
         "Map" to Icons.Filled.LocationOn,
         "Publish" to Icons.Filled.Home,
-        "Message" to Icons.Filled.Email,
+        "Messages" to Icons.Filled.Email,
         "Profile" to Icons.Filled.Person
     )
 
