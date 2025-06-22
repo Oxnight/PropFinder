@@ -43,11 +43,11 @@ fun Template(
     var selectedTitre by remember { mutableStateOf<String?>(null) }
 
     val destinations = listOf(
-        "Search" to Icons.Filled.Search,
-        "Map" to Icons.Filled.LocationOn,
-        "Publish" to Icons.Filled.Home,
-        "Messages" to Icons.Filled.Email,
-        "Profile" to Icons.Filled.Person
+        "search" to Icons.Filled.Search,
+        "map" to Icons.Filled.LocationOn,
+        "publish" to Icons.Filled.Home,
+        "messages" to Icons.Filled.Email,
+        "profile" to Icons.Filled.Person
     )
 
     val testTags = listOf(
@@ -92,7 +92,12 @@ fun Template(
             )
         },
         bottomBar = {
-            NavigationBar(containerColor = Color(0xFFD9D9D9)) {
+            NavigationBar(
+                containerColor = Color(0xFFD9D9D9),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1E1E1E))
+            ) {
                 destinations.forEachIndexed { idx, (route, icon) ->
                     NavigationBarItem(
                         modifier = testTags[idx]?.let { Modifier.testTag(it) } ?: Modifier,
