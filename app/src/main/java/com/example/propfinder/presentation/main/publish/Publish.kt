@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -174,7 +175,11 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                     modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFF07B42)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Ajouter des images", tint = Color(0xFFD9D9D9))
+                    Icon(Icons.Default.Add, contentDescription = "Ajouter des images", tint = Color(0xFFD9D9D9), modifier = Modifier
+                        .size(24.dp)
+                        .clickable { imagePicker.launch("image/*") }
+                        .testTag("add_image_button")
+                    )
                 }
                 Text("   (${imageUris.size} images chargées)", fontWeight = FontWeight.Light)
             }
