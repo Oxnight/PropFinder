@@ -92,7 +92,6 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             ) {
                 IconButton(
                     onClick = {
-                        //val popped = navController.navigate("main")
                         onClose()
                     },
                     modifier = Modifier
@@ -150,7 +149,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
     ) {
         var showDialog by remember { mutableStateOf(false) }
         val currentUserId = authViewModel.getUserId()
-        var annonce by remember { androidx.compose.runtime.mutableStateOf<Annonce?>(null) }
+        var annonce by remember { mutableStateOf<Annonce?>(null) }
         val context = LocalContext.current
 
         LaunchedEffect(titre) {
@@ -253,11 +252,11 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                 Text(
                                     "${annonce?.localisation}",
                                     style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
-                                    maxLines = 2, // ou plus selon le besoin
+                                    maxLines = 2,
                                     softWrap = true,
                                     modifier = Modifier
                                         .padding(start = 4.dp)
-                                        .widthIn(max = 200.dp) // largeur max à ajuster selon la maquette
+                                        .widthIn(max = 200.dp)
                                 )
 
                             }
@@ -275,7 +274,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                         showDialog = true
 
                                     },
-                                tint = Color(0xFFD32F2F) // rouge
+                                tint = Color(0xFFD32F2F)
                             )
                             if (showDialog) {
                                 AlertDialog(
@@ -346,8 +345,8 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                             modifier = Modifier
                                 .background(
                                     color = when (annonce?.type) {
-                                        "à louer" -> Color(0xFF2196F3)  // Bleu
-                                        "à vendre" -> Color(0xFFF44336) // Rouge
+                                        "à louer" -> Color(0xFF2196F3)
+                                        "à vendre" -> Color(0xFFF44336)
                                         else -> Color.Gray
                                     },
                                     shape = RoundedCornerShape(4.dp)
@@ -395,7 +394,7 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    var userName by remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+                    var userName by remember { mutableStateOf<String?>(null) }
                     annonceViewModel.getUserNameById(annonce?.idUser ?: "") { name ->
                         userName = name
                     }

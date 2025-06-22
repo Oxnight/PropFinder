@@ -48,7 +48,6 @@ class ProfileViewModel : ViewModel() {
     }
 
 
-    ///ModifierProfile ViewModel
     fun updateUserProfile(prenom: String, nom: String, age: String, email: String) {
         val userId = auth.currentUser?.uid ?: return
 

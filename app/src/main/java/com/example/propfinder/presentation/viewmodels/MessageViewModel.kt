@@ -41,12 +41,9 @@ class MessageViewModel : ViewModel() {
                         val doc = change.document
                         val newMessage = doc.toObject(Message::class.java)
 
-                        // Utiliser l'ID automatique du document Firebase
                         val documentId = doc.id
 
-                        // Vérifier si le message n'existe pas déjà en comparant les IDs de document
                         val alreadyExists = messages.any {
-                            // Tu peux comparer par contenu + senderId + dateEnvoie si pas d'ID dans le modèle
                             it.contenu == newMessage.contenu &&
                                     it.senderId == newMessage.senderId &&
                                     it.dateEnvoie == newMessage.dateEnvoie

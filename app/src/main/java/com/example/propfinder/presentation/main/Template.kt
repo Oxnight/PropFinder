@@ -52,7 +52,7 @@ fun Template(
 
     val testTags = listOf(
         "home_button",
-        null, // pas de test tag pour "map"
+        null,
         "publish_button",
         "discussion_button",
         "profile_button"

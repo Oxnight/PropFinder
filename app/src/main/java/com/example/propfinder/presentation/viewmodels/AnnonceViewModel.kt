@@ -23,7 +23,7 @@ class AnnonceViewModel : ViewModel() {
         annonceCollection.document(idAnnonce).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    onResult(document.data)  // ✅ renvoie tous les champs dans un Map
+                    onResult(document.data)
                 } else {
                     onResult(null)
                 }

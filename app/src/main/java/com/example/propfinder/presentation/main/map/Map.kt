@@ -33,7 +33,7 @@ fun OsmdroidMapView(annonceViewModel: AnnonceViewModel, navController : NavContr
 
                 annonceViewModel.getAllCoordinates { coordinatesList ->
                     coordinatesList.forEach { coord ->
-                        val parts = coord.split(",") // Supposons que les coordonnées soient au format "latitude,longitude"
+                        val parts = coord.split(",")
                         if (parts.size == 2) {
                             val latitude = parts[0].toDoubleOrNull()
                             val longitude = parts[1].toDoubleOrNull()

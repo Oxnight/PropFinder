@@ -78,24 +78,19 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
     val discussionIdState = remember { mutableStateOf(idDiscussion) }
 
     LaunchedEffect(idAnnonce) {
-        // Si on arrive depuis l’annonce :
         if (discussionIdState.value == null && idAnnonce != null && userId != null) {
 
-            // 1. Chercher d’abord une discussion existante
             discussionViewModel.findDiscussion(idAnnonce, userId) { existing ->
                 if (existing != null) {
-                    // → On la ré-utilise
                     discussionIdState.value = existing.id
                     messageViewModel.loadMessagesForDiscussion(existing.id)
                 } else {
-                    // 2. Sinon seulement, on la crée
                     discussionViewModel.createDiscussion(
                         idAnnonce = idAnnonce,
                         idUserSend = userId
                     ) { created ->
                         if (created != null) {
                             discussionIdState.value = created.id
-                            // Pas besoin de re-charger, le Flow/LiveData réagira
                         }
                     }
                 }
@@ -119,7 +114,6 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 discussion?.let {
                     val myId = authViewModel.getUserId()
                     val idDestinataire = if (it.idUserSend == myId) {
-                        // C'est toi qui a envoyé, donc l'autre est le propriétaire
                         annonceViewModel.getUserIdById(it.idAnnonce) { ownerId ->
                             if (ownerId != null) {
                                 authViewModel.getUserNameById(ownerId) { name ->
@@ -128,7 +122,6 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                             }
                         }
                     } else {
-                        // Tu es le propriétaire, donc l'autre est l’envoyeur
                         authViewModel.getUserNameById(it.idUserSend) { name ->
                             destinataireName.value = name ?: "Destinataire inconnu"
                         }
@@ -148,7 +141,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFD9D9D9))
-                .statusBarsPadding() // ✅ bien mieux que WindowInsets
+                .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             // Bouton retour à gauche
@@ -159,7 +152,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .height(42.dp) // facultatif si tu veux une taille précise
+                    .height(42.dp)
                     .testTag("back_button")
             ) {
                 Text(
@@ -169,7 +162,6 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 )
             }
 
-            // Nom centré
             if (utilisateur != null) {
                 Text(
                     text = destinataireName.value,
@@ -230,7 +222,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp, start = 12.dp, end = 12.dp), // ← remonte l’ensemble
+                    .padding(bottom = 24.dp, start = 12.dp, end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextField(
@@ -241,7 +233,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                         .weight(1f)
                         .heightIn(min = 48.dp)
                         .testTag("message_input"),
-                    shape = RoundedCornerShape(16.dp), // ← coins arrondis
+                    shape = RoundedCornerShape(16.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
@@ -254,7 +246,6 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                         val currentDiscussionId = discussionIdState.value
 
                         if (input.value.isNotBlank() && currentDiscussionId != null) {
-                            // discussion déjà prête → on insère juste le message
                             val messageToInsert = Message(
                                 contenu = input.value,
                                 idDiscussion = currentDiscussionId,
@@ -263,15 +254,13 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                             messageViewModel.insertMessage(messageToInsert)
                             input.value = ""
                         } else if (input.value.isNotBlank() && currentDiscussionId == null) {
-                            // il faut encore créer la discussion (cas théorique : la création a échoué
-                            // ou la LaunchedEffect n’a pas encore fini)
                             if (idAnnonce != null && userId != null) {
                                 discussionViewModel.createDiscussion(
                                     idAnnonce = idAnnonce,
                                     idUserSend = userId
                                 ) { created ->
                                     created?.let {
-                                        discussionIdState.value = it.id   // met à jour l’état
+                                        discussionIdState.value = it.id
                                         val message = Message(
                                             contenu = input.value,
                                             idDiscussion = it.id,

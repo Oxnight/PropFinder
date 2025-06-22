@@ -50,7 +50,6 @@ fun PropFinderApp() {
         navController = navController,
         startDestination = startDestination
     ) {
-        // Authentification
         composable("login") {
             LoginPage(navController = navController, authViewModel = authViewModel)
         }
@@ -58,7 +57,6 @@ fun PropFinderApp() {
             RegisterPage(navController = navController, authViewModel = authViewModel)
         }
 
-        // Écran principal (Template avec navigation interne)
         composable("main") {
             Template(
                 navController = navController,
@@ -67,7 +65,6 @@ fun PropFinderApp() {
             )
         }
 
-        // Navigation globale (hors template)
         composable("edit_annonce/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: return@composable
             EditAnnonceScreen(

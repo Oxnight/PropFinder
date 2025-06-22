@@ -51,7 +51,6 @@ fun ProfilePage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (utilisateur != null) {
-                // En-tête avec avatar + nom
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,7 +106,6 @@ fun ProfilePage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Bloc d’infos profil
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -155,7 +153,7 @@ fun ProfilePage(
 fun ProfileField(label: String, value: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 6.dp)) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_edit), // remplace avec un icône crayon
+            painter = painterResource(id = R.drawable.ic_edit),
             contentDescription = "Edit",
             tint = Color.Black,
             modifier = Modifier.size(20.dp)

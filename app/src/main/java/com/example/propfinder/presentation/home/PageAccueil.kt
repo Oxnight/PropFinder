@@ -110,7 +110,7 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
                         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                         textStyle = LocalTextStyle.current.copy(color = Color.Black),
                     )
-                    Spacer(modifier = Modifier.width(8.dp)) // petit espace entre le champ et l'image
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     // ajouter le bouton de filtre
                     IconButton(onClick = { showDialog = true }) {

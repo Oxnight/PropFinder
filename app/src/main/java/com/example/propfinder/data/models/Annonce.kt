@@ -3,7 +3,7 @@ package com.example.propfinder.data.models
 data class Annonce(
     val id: String = "",
     val idUser: String = "",
-    val type: String = "", // "à vendre" ou "à louer"
+    val type: String = "",
     val titre: String = "",
     val prix: Float = 0f,
     val description: String = "",

@@ -20,7 +20,6 @@ class DiscussionViewModel : ViewModel() {
     private var listenerRegistration: ListenerRegistration? = null
 
     fun loadDiscussionsForUser(userId: String) {
-        // Récupérer les ID des annonces de l'utilisateur
         firestore.collection("Annonce").get().addOnSuccessListener { annonceResult ->
             val userAnnonceList = mutableListOf<String>()
             for (doc in annonceResult) {
@@ -30,7 +29,6 @@ class DiscussionViewModel : ViewModel() {
                 }
             }
 
-            // Charger les discussions existantes
             discussionCollection
                 .get()
                 .addOnSuccessListener { result ->
@@ -55,7 +53,6 @@ class DiscussionViewModel : ViewModel() {
                     discussions.addAll(filteredDiscussions)
                 }
 
-            // Écoute temps réel des nouvelles discussions
             listenerRegistration = discussionCollection.addSnapshotListener { snapshots, error ->
                 if (error != null || snapshots == null) return@addSnapshotListener
 
@@ -65,7 +62,7 @@ class DiscussionViewModel : ViewModel() {
                     val idAnnonce = doc.getString("idAnnonce") ?: continue
                     val isSender   = idUserSend == userId
                     val isReceiver = idAnnonce in userAnnonceList
-                    if (!isSender && !isReceiver) continue   // on ignore les discussions qui ne nous concernent pas
+                    if (!isSender && !isReceiver) continue
 
                     val updatedDiscussion = Discussion(
                         id          = doc.id,
@@ -83,13 +80,12 @@ class DiscussionViewModel : ViewModel() {
                         DocumentChange.Type.MODIFIED -> {
                             val index = discussions.indexOfFirst { it.id == updatedDiscussion.id }
                             if (index != -1) {
-                                discussions[index] = updatedDiscussion    // on remplace l’ancienne version
+                                discussions[index] = updatedDiscussion
                             }
                         }
                         else -> {}
                     }
                 }
-                // un seul tri à faire à la fin du batch
                 discussions.sortByDescending { it.date }
             }
 
@@ -142,7 +138,6 @@ class DiscussionViewModel : ViewModel() {
                 onResult(discussion)
             }
             .addOnFailureListener {
-                // Log ou message d'erreur si besoin
             }
     }
 

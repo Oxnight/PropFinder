@@ -57,7 +57,7 @@ fun ModifierProfilePage(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(30.dp)) // padding haut
+            Spacer(modifier = Modifier.height(30.dp))
 
             Text(
                 text = "Modifier votre profil",

@@ -56,7 +56,8 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Supprimer la discussion") },
-            text = { Text("Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible.") },            confirmButton = {
+            text = { Text("Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible.") },
+            confirmButton = {
                 TextButton(onClick = {
                     discussionViewModel.deleteDiscussion(discussion.id)
                     showDialog = false
