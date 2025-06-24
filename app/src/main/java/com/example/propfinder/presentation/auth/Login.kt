@@ -1,6 +1,5 @@
 package com.example.propfinder.presentation.auth
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -28,21 +27,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.propfinder.presentation.main.Template
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val context = LocalContext.current
+    var email by remember { mutableStateOf("") }         // Champ d'email de l'utilisateur
+    var password by remember { mutableStateOf("") }      // Champ de mot de passe
+    val context = LocalContext.current                   // Contexte Android (pour afficher des Toasts)
 
+    // Container principal avec fond sombre
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1E1E1E))
-    ){
+    ) {
+        // Colonne centrale contenant le formulaire de connexion
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -50,13 +49,14 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Logo de l'application
             Image(
                 painter = painterResource(id = R.drawable.propfinder),
                 contentDescription = "Logo",
                 modifier = Modifier.size(128.dp)
             )
 
-
+            // Titre
             Text(
                 text = "Connexion",
                 fontSize = 32.sp,
@@ -66,6 +66,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Champ Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -79,6 +80,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Champ Mot de passe
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -94,15 +96,16 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Spacer(modifier = Modifier.height(24.dp))
 
-
+            // Bouton de connexion
             Button(
                 onClick = {
                     if (email.isNotBlank() && password.isNotBlank()) {
+                        // Appel ViewModel pour authentification
                         authViewModel.signIn(
                             email,
                             password,
                             onSuccess = {
-                                navController.navigate("main")
+                                navController.navigate("main") // Navigation vers la page principale
                             },
                             onFailure = {
                                 Toast.makeText(
@@ -128,6 +131,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Lien vers la page de création de compte
             Button(
                 onClick = { navController.navigate("register") },
                 modifier = Modifier
@@ -140,6 +144,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Lien vers la récupération de mot de passe
             Text(
                 text = "Mot de passe oublié ?",
                 fontSize = 14.sp,
@@ -151,6 +156,7 @@ fun LoginPage(navController: NavHostController, authViewModel: AuthViewModel = v
 
 @Composable
 fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
+    // Champs de formulaire utilisateur
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
@@ -159,6 +165,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
     val context = LocalContext.current
 
+    // Vérification du format d'email
     fun isEmailValid(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
@@ -175,12 +182,14 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Logo
             Image(
                 painter = painterResource(id = R.drawable.propfinder),
                 contentDescription = "Logo",
                 modifier = Modifier.size(128.dp)
             )
 
+            // Titre
             Text(
                 text = "Créer un compte",
                 fontSize = 32.sp,
@@ -190,6 +199,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -204,6 +214,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Nom
             OutlinedTextField(
                 value = lastName,
                 onValueChange = { lastName = it },
@@ -218,6 +229,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Prénom
             OutlinedTextField(
                 value = firstName,
                 onValueChange = { firstName = it },
@@ -232,6 +244,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Âge
             OutlinedTextField(
                 value = age,
                 onValueChange = { age = it },
@@ -246,6 +259,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Mot de passe
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -262,6 +276,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Bouton d'inscription avec validation du formulaire
             Button(
                 onClick = {
                     when {
@@ -275,6 +290,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                             Toast.makeText(context, "Le mot de passe doit contenir au moins 6 caractères", Toast.LENGTH_SHORT).show()
                         }
                         else -> {
+                            // Enregistrement via le ViewModel
                             authViewModel.signUp(
                                 email = email,
                                 password = password,
@@ -297,6 +313,7 @@ fun RegisterPage(navController: NavHostController, authViewModel: AuthViewModel 
                 Text("Créer votre compte", color = Color(0xFF1E1E1E))
             }
 
+            // Bouton de retour à la page précédente
             OutlinedButton(
                 onClick = {
                     navController.popBackStack()

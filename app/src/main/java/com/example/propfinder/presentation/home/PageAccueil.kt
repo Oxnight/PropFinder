@@ -3,7 +3,6 @@ package com.example.propfinder.presentation.home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import com.example.propfinder.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,13 +16,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
@@ -33,17 +27,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import coil.compose.AsyncImage
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.sp
@@ -52,19 +43,19 @@ import com.example.propfinder.data.models.Annonce
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit ) {
-    var search by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("Tous") }
-    var showDialog by remember { mutableStateOf(false) }
+    var search by remember { mutableStateOf("") }                     // Texte saisi dans la barre de recherche
+    var selectedFilter by remember { mutableStateOf("Tous") }         // Filtre sélectionné : Tous / à louer / à vendre
+    var showDialog by remember { mutableStateOf(false) }              // État d'affichage de la boîte de dialogue de filtre
 
-    CompositionLocalProvider(
-        LocalOverscrollConfiguration provides null
-    ) {
+    // Supprime l'effet de rebond (overscroll) dans la liste
+    CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1E1E1E))
-        ){
-            Column(){
+                .background(Color(0xFF1E1E1E)) // Fond sombre
+        ) {
+            Column {
+                // Affichage de la boîte de dialogue de filtrage
                 if (showDialog) {
                     AlertDialog(
                         onDismissRequest = { showDialog = false },
@@ -98,21 +89,23 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
                         }
                     )
                 }
-                Row(modifier = Modifier.padding(16.dp),){
+
+                // Barre de recherche + bouton de filtre
+                Row(modifier = Modifier.padding(16.dp)) {
                     TextField(
                         value = search,
                         onValueChange = { search = it },
                         placeholder = { Text("Search...") },
                         singleLine = true,
                         modifier = Modifier
-                            .weight(1f) //
+                            .weight(1f)
                             .height(56.dp),
                         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                         textStyle = LocalTextStyle.current.copy(color = Color.Black),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // ajouter le bouton de filtre
+                    // Icône de filtre
                     IconButton(onClick = { showDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.FilterList,
@@ -121,11 +114,16 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
                             tint = Color(0xFFF07B42)
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-
                 }
-                Row(modifier = Modifier.padding(16.dp)){
-                    Annonce(viewModel = annonceViewModel, onAnnonceClick = onAnnonceClick, selectedFilter = selectedFilter, search = search)
+
+                // Section d’affichage des annonces
+                Row(modifier = Modifier.padding(16.dp)) {
+                    Annonce(
+                        viewModel = annonceViewModel,
+                        onAnnonceClick = onAnnonceClick,
+                        selectedFilter = selectedFilter,
+                        search = search
+                    )
                 }
             }
         }
@@ -136,16 +134,20 @@ fun Recherche(annonceViewModel: AnnonceViewModel, onAnnonceClick: (String) -> Un
 fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selectedFilter: String, search: String) {
     var annonces by remember { mutableStateOf<List<Annonce>>(emptyList()) }
 
+    // Recharge les annonces à chaque changement de filtre ou de recherche
     LaunchedEffect(selectedFilter, search) {
         viewModel.getAllAnnonces { allAnnonces ->
+            // Filtrage par type
             val filtered = when (selectedFilter) {
                 "à louer" -> allAnnonces.filter { it.type == "à louer" }
                 "à vendre" -> allAnnonces.filter { it.type == "à vendre" }
                 else -> allAnnonces
             }
 
+            // Tri décroissant par date
             val sorted = filtered.sortedByDescending { it.date }
 
+            // Filtrage par mot-clé dans le titre
             annonces = if (search.isNotBlank()) {
                 sorted.filter { it.titre?.contains(search, ignoreCase = true) == true }
             } else {
@@ -154,6 +156,7 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
         }
     }
 
+    // Affichage sous forme de LazyColumn
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -161,16 +164,16 @@ fun Annonce(viewModel: AnnonceViewModel, onAnnonceClick: (String) -> Unit, selec
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(annonces) { annonce ->
-            val titre = annonce.titre?.toString() ?: ""
-            val description = annonce.description?.toString() ?: ""
-            val localisation = annonce.localisation?.toString() ?: ""
-            val prix = annonce.prix?.let { formatPrice(it) } ?: ""
+            val titre = annonce.titre ?: ""
+            val description = annonce.description ?: ""
+            val localisation = annonce.localisation ?: ""
+            val prix = annonce.prix.let { formatPrice(it) }
             val dateLisible = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(annonce.date))
 
             AnnonceItem(
                 title = titre,
                 localisation = localisation,
-                prix = prix + " €",
+                prix = "$prix €",
                 date = dateLisible,
                 type = annonce.type,
                 onClick = { onAnnonceClick(titre) }
@@ -198,13 +201,11 @@ fun AnnonceItem(
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
-            // Partie haute : image + infos
+            // Image + badge de type
             Row(modifier = Modifier.fillMaxWidth()) {
-
-                // Image
                 Box {
                     Image(
-                        painter = painterResource(id = R.drawable.appartement1),
+                        painter = painterResource(id = R.drawable.appartement1), // Image statique par défaut
                         contentDescription = "Image",
                         modifier = Modifier
                             .size(160.dp)
@@ -212,14 +213,14 @@ fun AnnonceItem(
                         contentScale = ContentScale.Crop
                     )
 
-                    // Badge dispo
+                    // Badge dynamique : à louer / à vendre
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .background(
                                 color = when (type) {
-                                    "à louer" -> Color(0xFF2196F3)  // Bleu
-                                    "à vendre" -> Color(0xFFF44336) // Rouge
+                                    "à louer" -> Color(0xFF2196F3)
+                                    "à vendre" -> Color(0xFFF44336)
                                     else -> Color.Gray
                                 },
                                 shape = RoundedCornerShape(4.dp)
@@ -240,7 +241,7 @@ fun AnnonceItem(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Texte
+                // Titre et localisation
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -268,7 +269,7 @@ fun AnnonceItem(
             Divider()
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Bas : prix + date avec icônes
+            // Affichage du prix et de la date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -289,5 +290,6 @@ fun AnnonceItem(
 }
 
 fun formatPrice(value: Number): String {
+    // Formate les nombres en ajoutant les séparateurs de milliers
     return "%,.2f".format(value.toDouble()).replace(',', ' ')
 }
