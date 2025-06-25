@@ -25,10 +25,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialisation de Firebase pour l'app
         FirebaseApp.initializeApp(this)
+
+        // Active le rendu sans bordure (Edge-to-edge layout)
         enableEdgeToEdge()
+
+        // Configuration d’OSMDroid : important pour éviter les erreurs de tuiles offline
         Configuration.getInstance().userAgentValue = packageName
 
+        // Définition de l’interface utilisateur avec Jetpack Compose
         setContent {
             PropFinderTheme {
                 PropFinderApp()
@@ -40,23 +46,31 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PropFinderApp() {
     val navController = rememberNavController()
+
+    // Initialisation des ViewModels principaux (authentification et annonces)
     val authViewModel: AuthViewModel = viewModel()
     val annonceViewModel: AnnonceViewModel = viewModel()
 
+    // Détermine la destination initiale selon si l'utilisateur est connecté
     val isLoggedIn = authViewModel.isUserLoggedIn()
     val startDestination = if (isLoggedIn) "main" else "login"
 
+    // Définition des routes de navigation de l'application
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        // Page de connexion
         composable("login") {
             LoginPage(navController = navController, authViewModel = authViewModel)
         }
+
+        // Page d'inscription
         composable("register") {
             RegisterPage(navController = navController, authViewModel = authViewModel)
         }
 
+        // Template principal (navigation par onglets, si l'utilisateur est connecté)
         composable("main") {
             Template(
                 navController = navController,
@@ -65,6 +79,7 @@ fun PropFinderApp() {
             )
         }
 
+        // Page d’édition d’une annonce spécifique (via son ID)
         composable("edit_annonce/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: return@composable
             EditAnnonceScreen(
@@ -74,15 +89,18 @@ fun PropFinderApp() {
             )
         }
 
+        // Accès direct à une discussion via son ID
         composable("chat_route/{idDiscussion}") { backStackEntry ->
             val idDiscussion = backStackEntry.arguments?.getString("idDiscussion")
             ChatPage(navController = navController, idDiscussion = idDiscussion.toString())
         }
 
+        // Page de modification du profil utilisateur
         composable("modifier_profile_route") {
             ModifierProfilePage(navController = navController)
         }
 
+        // Accès à la messagerie depuis une annonce (création de discussion si besoin)
         composable("message_route/{idAnnonce}") { backStackEntry ->
             val idAnnonce = backStackEntry.arguments?.getString("idAnnonce")
             ChatPage(navController = navController, idAnnonce = idAnnonce)

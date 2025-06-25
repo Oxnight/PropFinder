@@ -1,9 +1,7 @@
 package com.example.propfinder.presentation.main
 
-import ProfilePage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -14,10 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import com.example.propfinder.R
 import com.example.propfinder.presentation.home.Recherche
 import com.example.propfinder.presentation.main.annonce.AnnonceDetail
@@ -26,9 +21,8 @@ import com.example.propfinder.presentation.main.messages.DiscussionsPage
 import com.example.propfinder.presentation.main.publish.Publish
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
+import com.example.propfinder.presentation.main.profile.ProfilePage
 import androidx.compose.ui.platform.testTag
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,11 +31,17 @@ fun Template(
     authViewModel: AuthViewModel,
     annonceViewModel: AnnonceViewModel
 ) {
+    // Contrôleur de navigation interne (navigation par onglets)
     val internalNavController = rememberNavController()
+
+    // État de l'entrée de navigation actuelle
     val currentEntry by internalNavController.currentBackStackEntryAsState()
     val currentDestination = currentEntry?.destination?.route
+
+    // État pour afficher les détails d'une annonce sélectionnée
     var selectedTitre by remember { mutableStateOf<String?>(null) }
 
+    // Liste des destinations et des icônes associées pour la bottom bar
     val destinations = listOf(
         "search" to Icons.Filled.Search,
         "map" to Icons.Filled.LocationOn,
@@ -50,6 +50,7 @@ fun Template(
         "profile" to Icons.Filled.Person
     )
 
+    // Liste des test tags pour chaque bouton (pour les tests UI)
     val testTags = listOf(
         "home_button",
         null,
@@ -58,11 +59,13 @@ fun Template(
         "profile_button"
     )
 
+    // Scaffold principal : TopAppBar + BottomNavigation + Corps de page
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {},
                 navigationIcon = {
+                    // Logo centré dans la barre du haut
                     Box(Modifier.fillMaxWidth()) {
                         Icon(
                             painter = painterResource(id = R.drawable.propfinder),
@@ -75,6 +78,7 @@ fun Template(
                     }
                 },
                 actions = {
+                    // Bouton de raccourci vers les messages dans la barre du haut
                     IconButton(onClick = {
                         internalNavController.navigate("messages")
                     }) {
@@ -92,6 +96,7 @@ fun Template(
             )
         },
         bottomBar = {
+            // Barre de navigation inférieure avec onglets
             NavigationBar(
                 containerColor = Color(0xFFD9D9D9),
                 modifier = Modifier
@@ -112,17 +117,21 @@ fun Template(
                                     launchSingleTop = true
                                 }
                             }
-                            selectedTitre = null
+                            selectedTitre = null // Réinitialisation de la sélection
                         }
                     )
                 }
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)) {
+        // Corps de la page : contenu variable selon la navigation
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
 
+            // Système de navigation interne pour les onglets principaux
             NavHost(
                 navController = internalNavController,
                 startDestination = "search",
@@ -130,12 +139,15 @@ fun Template(
                     .fillMaxSize()
                     .background(Color(0xFF1E1E1E))
             ) {
+                // Page de recherche d'annonces
                 composable("search") {
                     Recherche(
                         annonceViewModel = annonceViewModel,
                         onAnnonceClick = { titre -> selectedTitre = titre }
                     )
                 }
+
+                // Carte avec points de localisation des annonces
                 composable("map") {
                     OsmdroidMapView(
                         annonceViewModel = annonceViewModel,
@@ -143,6 +155,8 @@ fun Template(
                         onAnnonceClick = { titre -> selectedTitre = titre }
                     )
                 }
+
+                // Formulaire de publication d'une annonce
                 composable("publish") {
                     Publish(
                         annonceViewModel = annonceViewModel,
@@ -150,14 +164,19 @@ fun Template(
                         navController = navController
                     )
                 }
+
+                // Messagerie (liste des discussions)
                 composable("messages") {
                     DiscussionsPage(navController = navController)
                 }
+
+                // Profil utilisateur
                 composable("profile") {
                     ProfilePage(navController = navController)
                 }
             }
 
+            // Affichage de la fiche annonce en sur-impression si un titre a été sélectionné
             if (selectedTitre != null) {
                 Box(
                     modifier = Modifier

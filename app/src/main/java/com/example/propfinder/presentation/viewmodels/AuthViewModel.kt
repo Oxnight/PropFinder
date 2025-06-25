@@ -2,24 +2,23 @@ package com.example.propfinder.presentation.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-
-import com.example.propfinder.data.states.AuthState
 import com.example.propfinder.data.models.Utilisateur
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-
 
 class AuthViewModel : ViewModel() {
 
+    // Instance Firebase Auth pour l’authentification
     private val auth = FirebaseAuth.getInstance()
+
+    // Instance Firestore pour stocker les données utilisateur
     private val firestore = FirebaseFirestore.getInstance()
     private val utilisateurCollection = firestore.collection("Utilisateur")
 
+    /**
+     * Fonction d'inscription d’un nouvel utilisateur avec création d’un compte Firebase Auth
+     * et insertion des informations dans Firestore.
+     */
     fun signUp(
         email: String,
         password: String,
@@ -30,7 +29,6 @@ class AuthViewModel : ViewModel() {
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-
                 val uid = auth.currentUser?.uid
 
                 val userDataSendToFireStore = Utilisateur(
@@ -41,14 +39,20 @@ class AuthViewModel : ViewModel() {
                     age = age
                 )
 
+                // Ajout de l'utilisateur dans la collection "Utilisateur"
                 firestore.collection("Utilisateur")
-                    .document(uid!!)
+                    .document(uid!!) // Utilisation du même UID que dans Firebase Auth
                     .set(userDataSendToFireStore)
                     .addOnSuccessListener {
                         onSuccess()
                     }
             }
     }
+
+    /**
+     * Connexion d’un utilisateur avec email et mot de passe.
+     * En cas d’échec, le callback `onFailure` est appelé.
+     */
     fun signIn(
         email: String,
         password: String,
@@ -63,12 +67,16 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-
-
+    /**
+     * Récupère l'ID utilisateur actuellement connecté (UID Firebase).
+     */
     fun getUserId(): String? {
         return auth.currentUser?.uid
     }
 
+    /**
+     * Récupère le nom complet d’un utilisateur à partir de son ID.
+     */
     fun getUserNameById(idUser: String, onResult: (String?) -> Unit) {
         utilisateurCollection.document(idUser)
             .get()
@@ -80,12 +88,17 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Vérifie si un utilisateur est actuellement connecté.
+     */
     fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null
     }
+
+    /**
+     * Déconnecte l'utilisateur actuellement connecté.
+     */
     fun signOut() {
         FirebaseAuth.getInstance().signOut()
     }
-
-
 }

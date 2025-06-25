@@ -147,22 +147,22 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
         navController: NavController,
         titre: String
     ) {
-        var showDialog by remember { mutableStateOf(false) }
-        val currentUserId = authViewModel.getUserId()
-        var annonce by remember { mutableStateOf<Annonce?>(null) }
-        val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+    val currentUserId = authViewModel.getUserId()
+    var annonce by remember { mutableStateOf<Annonce?>(null) }
+    val context = LocalContext.current
 
-        LaunchedEffect(titre) {
-            annonceViewModel.getAllByTitre(titre) { annonces ->
-                if (annonces.isNotEmpty()) {
-                    annonce = annonces.first()
-                }
+    LaunchedEffect(titre) {
+        annonceViewModel.getAllByTitre(titre) { annonces ->
+            if (annonces.isNotEmpty()) {
+                annonce = annonces.first()
             }
         }
+    }
 
     CompositionLocalProvider(
-            LocalOverscrollConfiguration provides null
-        ) {
+        LocalOverscrollConfiguration provides null
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -287,10 +287,18 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                                 showDialog = false
                                                 annonceViewModel.deleteAnnonce(annonce!!.id!!) { success ->
                                                     if (success) {
-                                                        Toast.makeText(context, "Annonce supprimée", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Annonce supprimée",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
                                                         navController.navigate("main")
                                                     } else {
-                                                        Toast.makeText(context, "Erreur lors de la suppression", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Erreur lors de la suppression",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
                                                     }
                                                 }
                                             },
@@ -322,7 +330,11 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                 onClick = {
                                     navController.navigate("message_route/${annonce?.id}")
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFFF07B42
+                                    )
+                                ),
                                 modifier = Modifier
                                     .padding(end = 16.dp)
                                     .testTag("contact_button")
@@ -335,7 +347,6 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
                                 )
                             }
                         }
-
 
 
                     }
@@ -418,4 +429,4 @@ fun AnnonceDetail(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewMod
             }
         }
     }
-        }
+}

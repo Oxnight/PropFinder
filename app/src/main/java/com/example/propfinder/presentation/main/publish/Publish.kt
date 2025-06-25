@@ -5,31 +5,25 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalOverscrollConfiguration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
 import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
 import com.example.propfinder.presentation.viewmodels.AuthViewModel
@@ -39,14 +33,16 @@ import java.io.IOException
 import java.util.*
 
 @Composable
-fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController : NavController) {
+fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController) {
+    // Conteneur principal de la page de publication
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFD9D9D9)),
+            .background(Color(0xFFD9D9D9))
     ) {
+        // En-tête avec icône maison et titre
         Column(modifier = Modifier.padding(top = 16.dp)) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -64,6 +60,8 @@ fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, na
                 )
             }
         }
+
+        // Séparateur visuel
         Divider(
             color = Color(0xFF1E1E1E),
             thickness = 3.dp,
@@ -72,7 +70,9 @@ fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, na
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 8.dp)
         )
-        FormulaireAvance(annonceViewModel = annonceViewModel, authViewModel = authViewModel, navController = navController)
+
+        // Inclusion du formulaire de publication
+        FormulaireAvance(annonceViewModel, authViewModel, navController)
     }
 }
 
@@ -81,6 +81,7 @@ fun Publish(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, na
 fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthViewModel, navController: NavController) {
     val context = LocalContext.current
 
+    // États pour les champs du formulaire
     var selectedOption by remember { mutableStateOf("") }
     var titre by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -91,10 +92,12 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
     var imageUris by remember { mutableStateOf(listOf<Uri>()) }
     var prix by remember { mutableStateOf("") }
 
+    // Sélecteur d’images à partir de la galerie
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> -> imageUris = uris }
 
+    // Géocodage automatique basé sur l’adresse saisie
     LaunchedEffect(localisation) {
         if (localisation.isNotBlank()) {
             try {
@@ -120,6 +123,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
         }
     }
 
+    // Bloc principal scrollable contenant le formulaire
     CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
         Column(
             modifier = Modifier
@@ -128,11 +132,12 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Type d'annonce : à vendre / à louer
             Text("Vous avez un bien :", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp, bottom = 2.dp)
                     .selectable(
                         selected = selectedOption == "à vendre",
                         onClick = { selectedOption = "à vendre" },
@@ -147,7 +152,6 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 2.dp, bottom = 4.dp)
                     .testTag("radio_louer")
                     .selectable(
                         selected = selectedOption == "à louer",
@@ -159,12 +163,19 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                 RadioButton(selected = selectedOption == "à louer", onClick = null)
                 Text("à louer", modifier = Modifier.padding(start = 8.dp))
             }
+
+            // Titre de l’annonce
             OutlinedTextField(
                 value = titre,
                 onValueChange = { titre = it },
                 label = { Text("Titre") },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("titre_field")
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .testTag("titre_field")
             )
+
+            // Ajout d’images
             Text("Ajouter des images :", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Row(
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -172,23 +183,34 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
-                    modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFF07B42)),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF07B42)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Ajouter des images", tint = Color(0xFFD9D9D9), modifier = Modifier
-                        .size(24.dp)
-                        .clickable { imagePicker.launch("image/*") }
-                        .testTag("add_image_button")
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Ajouter des images",
+                        tint = Color(0xFFD9D9D9),
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { imagePicker.launch("image/*") }
+                            .testTag("add_image_button")
                     )
                 }
                 Text("   (${imageUris.size} images chargées)", fontWeight = FontWeight.Light)
             }
+
+            // Description
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
                 modifier = Modifier.fillMaxWidth().testTag("description_field")
             )
+
+            // Prix
             OutlinedTextField(
                 value = prix,
                 onValueChange = {
@@ -201,30 +223,42 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
+
+            // Caractéristiques du bien
             OutlinedTextField(
                 value = caracteristiques,
                 onValueChange = { caracteristiques = it },
                 label = { Text("Caractéristiques") },
                 modifier = Modifier.fillMaxWidth().testTag("carateristiques_field")
             )
+
+            // Adresse du bien
             OutlinedTextField(
                 value = localisation,
                 onValueChange = { localisation = it },
                 label = { Text("Adresse") },
                 modifier = Modifier.fillMaxWidth().testTag("adress_field")
             )
+
+            // Affichage des coordonnées géographiques si disponibles
             coordonnees.let { coords ->
                 if (coords.isNotBlank()) {
                     Text("Coordonnées : $coords", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
                 }
             }
+
+            // Affichage des erreurs de géocodage
             geocodingError?.let { error ->
                 Text(error, color = Color.Red, style = MaterialTheme.typography.bodySmall)
             }
+
+            // Bouton de validation et publication
             Button(
                 onClick = {
                     val prixFloat = prix.toFloatOrNull() ?: 0f
-                    val isFormValid = titre.isNotBlank() && description.isNotBlank() && caracteristiques.isNotBlank() && localisation.isNotBlank() && prixFloat > 0f && selectedOption.isNotBlank()
+                    val isFormValid = titre.isNotBlank() && description.isNotBlank() && caracteristiques.isNotBlank() &&
+                            localisation.isNotBlank() && prixFloat > 0f && selectedOption.isNotBlank()
+
                     if (isFormValid) {
                         annonceViewModel.publishAnnonce(
                             titre = titre,
@@ -235,7 +269,7 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                             prix = prixFloat,
                             type = selectedOption,
                             idUser = authViewModel.getUserId() ?: "",
-                            imageUri = if (imageUris.isNotEmpty()) imageUris[0] else null
+                            imageUri = imageUris.firstOrNull()
                         ) {
                             Toast.makeText(context, "Annonce publiée avec succès", Toast.LENGTH_SHORT).show()
                             navController.navigate("main")
@@ -245,7 +279,10 @@ fun FormulaireAvance(annonceViewModel: AnnonceViewModel, authViewModel: AuthView
                     }
                 },
                 modifier = Modifier.testTag("submit_add_button"),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42), contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFF07B42),
+                    contentColor = Color.White
+                ),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = "Envoyer")

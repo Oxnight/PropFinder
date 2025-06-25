@@ -3,23 +3,28 @@ package com.example.propfinder.presentation.viewmodels
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import com.example.propfinder.data.models.Discussion
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.*
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.ListenerRegistration
-
 
 class DiscussionViewModel : ViewModel() {
 
+    // Référence à Firestore
     private val firestore = FirebaseFirestore.getInstance()
     private val discussionCollection = firestore.collection("Discussion")
 
+    // Liste observable de discussions (utilisée côté UI)
     val discussions = mutableStateListOf<Discussion>()
 
+    // Listener Firestore pour la synchronisation en temps réel
     private var listenerRegistration: ListenerRegistration? = null
 
+    /**
+     * Charge toutes les discussions dans lesquelles l’utilisateur est impliqué :
+     * - en tant qu’expéditeur (`idUserSend`)
+     * - ou en tant que propriétaire d’annonce
+     */
     fun loadDiscussionsForUser(userId: String) {
+        // Récupération de toutes les annonces publiées par l'utilisateur
         firestore.collection("Annonce").get().addOnSuccessListener { annonceResult ->
             val userAnnonceList = mutableListOf<String>()
             for (doc in annonceResult) {
@@ -29,30 +34,30 @@ class DiscussionViewModel : ViewModel() {
                 }
             }
 
-            discussionCollection
-                .get()
-                .addOnSuccessListener { result ->
-                    val filteredDiscussions = result.documents.mapNotNull { doc ->
-                        val idUserSend = doc.getString("idUserSend") ?: return@mapNotNull null
-                        val idAnnonce = doc.getString("idAnnonce") ?: return@mapNotNull null
+            // Chargement des discussions correspondantes
+            discussionCollection.get().addOnSuccessListener { result ->
+                val filteredDiscussions = result.documents.mapNotNull { doc ->
+                    val idUserSend = doc.getString("idUserSend") ?: return@mapNotNull null
+                    val idAnnonce = doc.getString("idAnnonce") ?: return@mapNotNull null
 
-                        val isSender = idUserSend == userId
-                        val isReceiver = idAnnonce in userAnnonceList
+                    val isSender = idUserSend == userId
+                    val isReceiver = idAnnonce in userAnnonceList
 
-                        if (isSender || isReceiver) {
-                            Discussion(
-                                id = doc.id,
-                                idUserSend = idUserSend,
-                                idAnnonce = idAnnonce,
-                                date = doc.getTimestamp("date") ?: Timestamp.now(),
-                            )
-                        } else null
-                    }.sortedByDescending { it.date }
+                    if (isSender || isReceiver) {
+                        Discussion(
+                            id = doc.id,
+                            idUserSend = idUserSend,
+                            idAnnonce = idAnnonce,
+                            date = doc.getTimestamp("date") ?: Timestamp.now()
+                        )
+                    } else null
+                }.sortedByDescending { it.date }
 
-                    discussions.clear()
-                    discussions.addAll(filteredDiscussions)
-                }
+                discussions.clear()
+                discussions.addAll(filteredDiscussions)
+            }
 
+            // Ajoute un listener pour synchroniser les modifications en temps réel
             listenerRegistration = discussionCollection.addSnapshotListener { snapshots, error ->
                 if (error != null || snapshots == null) return@addSnapshotListener
 
@@ -60,15 +65,15 @@ class DiscussionViewModel : ViewModel() {
                     val doc = change.document
                     val idUserSend = doc.getString("idUserSend") ?: continue
                     val idAnnonce = doc.getString("idAnnonce") ?: continue
-                    val isSender   = idUserSend == userId
+                    val isSender = idUserSend == userId
                     val isReceiver = idAnnonce in userAnnonceList
                     if (!isSender && !isReceiver) continue
 
                     val updatedDiscussion = Discussion(
-                        id          = doc.id,
-                        idUserSend  = idUserSend,
-                        idAnnonce   = idAnnonce,
-                        date        = doc.getTimestamp("date") ?: Timestamp.now()
+                        id = doc.id,
+                        idUserSend = idUserSend,
+                        idAnnonce = idAnnonce,
+                        date = doc.getTimestamp("date") ?: Timestamp.now()
                     )
 
                     when (change.type) {
@@ -86,12 +91,16 @@ class DiscussionViewModel : ViewModel() {
                         else -> {}
                     }
                 }
+
+                // Tri des discussions par date (plus récentes en haut)
                 discussions.sortByDescending { it.date }
             }
-
         }
     }
 
+    /**
+     * Récupère une discussion par son ID.
+     */
     fun getDiscussionById(id: String, onResult: (Discussion?) -> Unit) {
         discussionCollection.document(id).get()
             .addOnSuccessListener { document ->
@@ -100,12 +109,16 @@ class DiscussionViewModel : ViewModel() {
                         id = document.id,
                         idUserSend = document.getString("idUserSend") ?: "",
                         idAnnonce = document.getString("idAnnonce") ?: "",
-                        date = document.getTimestamp("date") ?: Timestamp.now(),
+                        date = document.getTimestamp("date") ?: Timestamp.now()
                     )
                     onResult(discussion)
                 }
             }
     }
+
+    /**
+     * Supprime une discussion de Firestore et de la liste observable.
+     */
     fun deleteDiscussion(discussionId: String) {
         discussionCollection.document(discussionId)
             .delete()
@@ -114,16 +127,22 @@ class DiscussionViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Supprime le listener temps réel lors de la destruction du ViewModel.
+     */
     override fun onCleared() {
         super.onCleared()
         listenerRegistration?.remove()
     }
 
+    /**
+     * Crée une nouvelle discussion et la stocke dans Firestore.
+     */
     fun createDiscussion(
         idAnnonce: String,
         idUserSend: String,
         onResult: (Discussion?) -> Unit
-    )  {
+    ) {
         val newDocRef = discussionCollection.document()
 
         val discussion = Discussion(
@@ -141,6 +160,9 @@ class DiscussionViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Vérifie si une discussion entre un utilisateur et une annonce existe déjà.
+     */
     fun findDiscussion(
         idAnnonce: String,
         idUserSend: String,
@@ -154,8 +176,8 @@ class DiscussionViewModel : ViewModel() {
             .addOnSuccessListener { snap ->
                 onResult(snap.documents.firstOrNull()?.toObject(Discussion::class.java))
             }
-            .addOnFailureListener { onResult(null) }
+            .addOnFailureListener {
+                onResult(null)
+            }
     }
-
-
 }

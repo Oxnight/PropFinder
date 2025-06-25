@@ -1,85 +1,52 @@
 package com.example.propfinder.presentation.main.messages
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.propfinder.data.models.Discussion
+import androidx.navigation.NavController
 import com.example.propfinder.data.models.Message
-import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
-import com.example.propfinder.presentation.viewmodels.AuthViewModel
-import com.example.propfinder.presentation.viewmodels.MessageViewModel
-import com.example.propfinder.presentation.viewmodels.DiscussionViewModel
-import com.example.propfinder.presentation.viewmodels.ProfileViewModel
-import kotlin.math.log
-
+import com.example.propfinder.presentation.viewmodels.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnonce : String? = null) {
+fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnonce: String? = null) {
 
+    // Initialisation des ViewModels utilisés
     val authViewModel: AuthViewModel = viewModel()
     val discussionViewModel: DiscussionViewModel = viewModel()
     val annonceViewModel: AnnonceViewModel = viewModel()
     val messageViewModel: MessageViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+
+    // Accès aux infos utilisateur
     val utilisateur = profileViewModel.utilisateur
     val destinataireName = remember { mutableStateOf("...") }
 
+    // États internes de la page
     val userId = authViewModel.getUserId()
     val userEnFace = remember { mutableStateOf("") }
     val input = remember { mutableStateOf("") }
     val discussionIdState = remember { mutableStateOf(idDiscussion) }
 
+    // Recherche ou création automatique de la discussion si idAnnonce fourni
     LaunchedEffect(idAnnonce) {
         if (discussionIdState.value == null && idAnnonce != null && userId != null) {
-
             discussionViewModel.findDiscussion(idAnnonce, userId) { existing ->
                 if (existing != null) {
                     discussionIdState.value = existing.id
@@ -98,6 +65,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
         }
     }
 
+    // Chargement des messages à chaque changement d’ID de discussion
     LaunchedEffect(discussionIdState.value) {
         val id = discussionIdState.value
         if (id != null) {
@@ -105,15 +73,16 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
         }
     }
 
+    // Récupération du nom du destinataire pour l’en-tête
     LaunchedEffect(discussionIdState.value) {
         val id = discussionIdState.value
         if (id != null) {
             messageViewModel.loadMessagesForDiscussion(id)
-
             discussionViewModel.getDiscussionById(id) { discussion ->
                 discussion?.let {
                     val myId = authViewModel.getUserId()
-                    val idDestinataire = if (it.idUserSend == myId) {
+                    if (it.idUserSend == myId) {
+                        // Si l'utilisateur est l'expéditeur, on récupère le propriétaire de l'annonce
                         annonceViewModel.getUserIdById(it.idAnnonce) { ownerId ->
                             if (ownerId != null) {
                                 authViewModel.getUserNameById(ownerId) { name ->
@@ -122,6 +91,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                             }
                         }
                     } else {
+                        // Sinon, on récupère directement le nom de l’expéditeur
                         authViewModel.getUserNameById(it.idUserSend) { name ->
                             destinataireName.value = name ?: "Destinataire inconnu"
                         }
@@ -131,12 +101,14 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
         }
     }
 
+    // Conteneur principal de la page
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E)),
+            .background(Color(0xFF1E1E1E)), // Fond sombre global
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // En-tête avec nom du destinataire et bouton retour
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -144,7 +116,6 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Bouton retour à gauche
             Button(
                 onClick = { navController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
@@ -163,6 +134,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
             }
 
             if (utilisateur != null) {
+                // Affichage du nom du destinataire
                 Text(
                     text = destinataireName.value,
                     color = Color.Black,
@@ -171,6 +143,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
+                // Indicateur de chargement si profil non encore chargé
                 CircularProgressIndicator(
                     color = Color.Gray,
                     strokeWidth = 2.dp,
@@ -181,9 +154,8 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
             }
         }
 
-        CompositionLocalProvider(
-            LocalOverscrollConfiguration provides null
-        ) {
+        // Liste des messages
+        CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -193,6 +165,8 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 item {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
+
+                // Affichage de chaque message avec style différent selon l'expéditeur
                 items(messageViewModel.messages) { message ->
                     val isMe = message.senderId == userId
                     val backgroundColor = if (isMe) Color(0xFFF07B42) else Color(0xFF2E2E2E)
@@ -219,6 +193,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                 }
             }
 
+            // Zone de saisie + bouton d’envoi
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -240,12 +215,15 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                         disabledContainerColor = Color.White
                     )
                 )
+
                 Spacer(modifier = Modifier.width(8.dp))
+
                 Button(
                     onClick = {
                         val currentDiscussionId = discussionIdState.value
 
                         if (input.value.isNotBlank() && currentDiscussionId != null) {
+                            // Envoi d’un message dans discussion existante
                             val messageToInsert = Message(
                                 contenu = input.value,
                                 idDiscussion = currentDiscussionId,
@@ -254,6 +232,7 @@ fun ChatPage(navController: NavController, idDiscussion: String? = null, idAnnon
                             messageViewModel.insertMessage(messageToInsert)
                             input.value = ""
                         } else if (input.value.isNotBlank() && currentDiscussionId == null) {
+                            // Création d’une discussion avant d’envoyer le premier message
                             if (idAnnonce != null && userId != null) {
                                 discussionViewModel.createDiscussion(
                                     idAnnonce = idAnnonce,

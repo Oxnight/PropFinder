@@ -1,25 +1,10 @@
 package com.example.propfinder.presentation.main.profile
 
-import androidx.compose.material3.TextFieldDefaults
-
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +17,6 @@ import com.example.propfinder.presentation.viewmodels.ProfileViewModel
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 
-
 @Composable
 fun ModifierProfilePage(
     navController: NavController,
@@ -40,12 +24,13 @@ fun ModifierProfilePage(
 ) {
     val context = LocalContext.current
 
+    // États pour chaque champ modifiable
     var prenom = remember { mutableStateOf("") }
     var nom = remember { mutableStateOf("") }
     var age = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
 
-
+    // Conteneur principal de la page avec fond sombre
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -59,6 +44,7 @@ fun ModifierProfilePage(
         ) {
             Spacer(modifier = Modifier.height(30.dp))
 
+            // Titre de la page
             Text(
                 text = "Modifier votre profil",
                 fontSize = 20.sp,
@@ -68,20 +54,24 @@ fun ModifierProfilePage(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Bloc contenant les champs à éditer, avec fond clair
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFFD9D9D9), shape = RoundedCornerShape(8.dp))
                     .padding(16.dp)
             ) {
+                // Récupération des données utilisateur pour préremplissage
                 val utilisateur = profilviewModel.getUserProfile()
-                EditableField("Prénom",prenom.apply { value = utilisateur?.prenom ?: "" })
-                EditableField("Nom",nom.apply { value = utilisateur?.nom ?: "" })
-                EditableField("Âge",age.apply { value = utilisateur?.age ?: "" })
-                EditableField("Email",email.apply { value = utilisateur?.mail ?: "" })
+                EditableField("Prénom", prenom.apply { value = utilisateur?.prenom ?: "" })
+                EditableField("Nom", nom.apply { value = utilisateur?.nom ?: "" })
+                EditableField("Âge", age.apply { value = utilisateur?.age ?: "" })
+                EditableField("Email", email.apply { value = utilisateur?.mail ?: "" })
             }
 
             Spacer(modifier = Modifier.height(30.dp))
+
+            // Bouton d'enregistrement des modifications
             Button(
                 onClick = {
                     if (
@@ -100,8 +90,7 @@ fun ModifierProfilePage(
                     } else {
                         Toast.makeText(context, "Au moins un champ doit être rempli", Toast.LENGTH_SHORT).show()
                     }
-                }
-                ,
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
@@ -111,9 +100,9 @@ fun ModifierProfilePage(
                 Text("Enregistrer", color = Color.White, fontSize = 16.sp)
             }
 
-
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Bouton d’annulation (retour sans sauvegarde)
             Button(
                 onClick = { navController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
@@ -129,12 +118,13 @@ fun ModifierProfilePage(
 }
 
 @Composable
-fun EditableField(label: String, text : MutableState<String>) {
-
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 8.dp)) {
-
+fun EditableField(label: String, text: MutableState<String>) {
+    // Composable réutilisable pour un champ de texte modifiable
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
         TextField(
             value = text.value,
             onValueChange = { text.value = it },
@@ -147,4 +137,3 @@ fun EditableField(label: String, text : MutableState<String>) {
         )
     }
 }
-

@@ -1,4 +1,5 @@
-import android.util.Log
+package com.example.propfinder.presentation.main.profile
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,13 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,10 +31,10 @@ fun ProfilePage(
     authViewModel: AuthViewModel = viewModel(),
     navController: NavController
 ) {
+    // Récupération de l'objet utilisateur depuis le ViewModel
     val utilisateur = viewModel.utilisateur
 
-    Log.d("ProfilePage", "Utilisateur observé : $utilisateur")
-
+    // Conteneur principal avec fond sombre
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -51,6 +47,7 @@ fun ProfilePage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (utilisateur != null) {
+                // Bloc supérieur : affichage de l'avatar, du nom complet et bouton "Modifier"
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -58,6 +55,7 @@ fun ProfilePage(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Avatar utilisateur
                     Box {
                         Image(
                             painter = painterResource(id = R.drawable.avatar1),
@@ -67,6 +65,7 @@ fun ProfilePage(
                                 .clip(CircleShape)
                                 .border(1.dp, Color.Black, CircleShape)
                         )
+                        // Icône "+" superposée pour ajouter une photo (non fonctionnelle ici)
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Ajouter une photo",
@@ -81,6 +80,7 @@ fun ProfilePage(
 
                     Spacer(modifier = Modifier.width(16.dp))
 
+                    // Nom complet de l'utilisateur
                     Text(
                         text = "${utilisateur.prenom} ${utilisateur.nom}",
                         fontSize = 20.sp,
@@ -90,7 +90,7 @@ fun ProfilePage(
 
                     Spacer(modifier = Modifier.weight(0.8f))
 
-
+                    // Bouton "Modifier" pour accéder à la page de modification de profil
                     Button(
                         onClick = {
                             navController.navigate("modifier_profile_route")
@@ -106,6 +106,7 @@ fun ProfilePage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Bloc d'informations personnelles
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,17 +121,18 @@ fun ProfilePage(
                     ProfileField("Mail", utilisateur.mail)
                 }
             } else {
+                // Indicateur de chargement si le profil n'est pas encore disponible
                 CircularProgressIndicator(color = Color.White)
             }
         }
 
-
+        // Bouton de déconnexion affiché en bas à droite
         if (utilisateur != null) {
             Button(
                 onClick = {
                     authViewModel.signOut()
                     navController.navigate("login") {
-                        popUpTo("profile_route") { inclusive = true }
+                        popUpTo("profile_route") { inclusive = true } // Réinitialise la backstack
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF07B42)),
@@ -146,12 +148,13 @@ fun ProfilePage(
     }
 }
 
-
-
-
 @Composable
 fun ProfileField(label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 6.dp)) {
+    // Composable réutilisable pour l’affichage d’un champ de profil
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 6.dp)
+    ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_edit),
             contentDescription = "Edit",

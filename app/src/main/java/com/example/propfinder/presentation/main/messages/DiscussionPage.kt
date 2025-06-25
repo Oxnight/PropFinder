@@ -1,12 +1,6 @@
 package com.example.propfinder.presentation.main.messages
 
-import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalOverscrollConfiguration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,28 +24,31 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.propfinder.R
 import com.example.propfinder.data.models.Discussion
-import com.example.propfinder.presentation.viewmodels.AnnonceViewModel
-import com.example.propfinder.presentation.viewmodels.AuthViewModel
-import com.example.propfinder.presentation.viewmodels.DiscussionViewModel
+import com.example.propfinder.presentation.viewmodels.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun OneDiscussion(discussion: Discussion, navController: NavController) {
+    // Initialisation des ViewModels nécessaires
     val annonceViewModel: AnnonceViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
     val discussionViewModel: DiscussionViewModel = viewModel()
 
+    // Formatage de la date de la discussion
     val formatter = SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH)
     val formattedDate = formatter.format(discussion.date.toDate())
 
+    // États locaux pour stocker le titre de l'annonce et le nom du destinataire
     val titreAnnonceState = remember { mutableStateOf("") }
     val roleState = remember { mutableStateOf("") }
 
     val currentUserId = authViewModel.getUserId()
 
+    // État d'affichage du dialogue de suppression
     var showDialog by remember { mutableStateOf(false) }
 
+    // Boîte de dialogue de confirmation pour la suppression d'une discussion
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -73,12 +70,14 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
         )
     }
 
+    // Récupération du titre de l'annonce liée à la discussion
     LaunchedEffect(discussion.idAnnonce) {
         annonceViewModel.getAnnonceTitleById(discussion.idAnnonce) { titre ->
             titreAnnonceState.value = titre ?: "Titre inconnu"
         }
     }
 
+    // Récupération du nom de l'autre utilisateur selon qui est l'émetteur
     LaunchedEffect(discussion.id) {
         if (discussion.idUserSend == currentUserId) {
             annonceViewModel.getUserIdById(discussion.idAnnonce) { idUser ->
@@ -95,6 +94,7 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
         }
     }
 
+    // Affichage de l'élément de discussion
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,6 +105,7 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Avatar par défaut
         Image(
             painter = painterResource(id = R.drawable.avatar1),
             contentDescription = "Avatar utilisateur",
@@ -117,6 +118,7 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
 
         Spacer(modifier = Modifier.width(16.dp))
 
+        // Informations sur l'annonce et l'utilisateur
         Column(
             modifier = Modifier.weight(1f)
         ) {
@@ -140,6 +142,7 @@ fun OneDiscussion(discussion: Discussion, navController: NavController) {
             )
         }
 
+        // Bouton pour supprimer la discussion
         IconButton(onClick = { showDialog = true }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_delete),
@@ -158,10 +161,12 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
     val authViewModel: AuthViewModel = viewModel()
     val userId = authViewModel.getUserId()
 
+    // Chargement des discussions associées à l'utilisateur connecté
     LaunchedEffect(userId) {
         discussionViewModel.loadDiscussionsForUser(userId.toString())
     }
 
+    // Conteneur principal de la page
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = modifier
@@ -169,6 +174,7 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            // En-tête avec icône et titre
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -191,6 +197,7 @@ fun DiscussionsPage(modifier: Modifier = Modifier, navController: NavController)
                 )
             }
 
+            // Liste des discussions sous forme de cartes
             CompositionLocalProvider(
                 LocalOverscrollConfiguration provides null
             ) {

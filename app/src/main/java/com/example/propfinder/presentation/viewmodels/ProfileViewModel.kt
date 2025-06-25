@@ -9,19 +9,26 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-
 class ProfileViewModel : ViewModel() {
+
+    // Firebase Auth & Firestore
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
     private val userCollection = firestore.collection("Utilisateur")
 
+    // État observable du profil utilisateur
     var utilisateur by mutableStateOf<Utilisateur?>(null)
         private set
+
+    // Chargement automatique au démarrage du ViewModel
     init {
         loadUtilisateur()
     }
 
-
+    /**
+     * Récupère les données du profil utilisateur connecté,
+     * et les met à jour en temps réel grâce à un listener Firestore.
+     */
     private fun loadUtilisateur() {
         val userId = auth.currentUser?.uid ?: return
 
@@ -47,7 +54,10 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
-
+    /**
+     * Met à jour le profil utilisateur dans Firestore.
+     * Seuls les champs non vides sont pris en compte.
+     */
     fun updateUserProfile(prenom: String, nom: String, age: String, email: String) {
         val userId = auth.currentUser?.uid ?: return
 
@@ -68,8 +78,10 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Retourne les données utilisateur actuellement en mémoire.
+     */
     fun getUserProfile(): Utilisateur? {
         return utilisateur
     }
-
 }
